@@ -9,6 +9,7 @@ theme = "ghostwriter"
     description = "Change this"
     github = "https://github.com/hiimchinh"
     twitter = "https://twitter.com/hiimchinh"
+    linkedin = "https://linkedin.com/in/hiimchinh"
     email = "chinh@hiimchinh.com"
     opengraph = true
     shareTwitter = true
