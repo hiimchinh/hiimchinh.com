@@ -1,18 +1,19 @@
 baseurl = "/"
-title = "My blog"
+title = "Chinh's Blog"
 theme = "ghostwriter"
 
 [Params]
     mainSections = ["post"]
     intro = true
-    headline = "My headline"
-    description = "My description"
+    headline = "Chinh's Blog"
+    description = "Change this"
     github = "https://github.com/hiimchinh"
     twitter = "https://twitter.com/hiimchinh"
-    email = "chinhhoang1196@gmail.com"
+    email = "chinh@hiimchinh.com"
     opengraph = true
     shareTwitter = true
     dateFormat = "Mon, Jan 2, 2006"
 
 [Permalinks]
     post = "/:filename/"
+    page = "/:filename/"
