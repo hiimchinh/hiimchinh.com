@@ -5,8 +5,8 @@ theme = "ghostwriter"
 [Params]
     mainSections = ["post"]
     intro = true
-    headline = "Chinh's Blog"
-    description = "Change this"
+    headline = "Hi I'm Chinh"
+    description = "My journey to learn to code in 10 years and maybe more."
     github = "https://github.com/hiimchinh"
     twitter = "https://twitter.com/hiimchinh"
     linkedin = "https://linkedin.com/in/hiimchinh"
@@ -16,5 +16,5 @@ theme = "ghostwriter"
     dateFormat = "Mon, Jan 2, 2006"
 
 [Permalinks]
-    post = "/:filename/"
+    post = "/:year/:month/:filename/"
     page = "/:filename/"
