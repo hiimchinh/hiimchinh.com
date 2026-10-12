@@ -1,23 +1,21 @@
 ---
 title: "Giới thiệu"
-description: "Hoàng Minh Chính, người làm phần mềm ở Hà Nội. Bảy năm làm tổng đài, CRM và ERP, giờ điều hành một studio nhỏ."
+description: "Hoàng Minh Chính, kỹ sư full-stack ở Hà Nội, làm Stringee và Cogover."
 ---
 
-Chào bạn, mình là Chính (Hoàng Minh Chính). Mình làm phần mềm ở Hà Nội.
+Chào bạn, mình là Chính (Hoàng Minh Chính), kỹ sư full-stack ở Hà Nội.
 
-Từ 2019, mình làm kỹ sư full-stack senior bảy năm tại một nền tảng giao tiếp đám mây: phần mềm tổng đài cho ngân hàng và công ty bảo hiểm, front-end của một CRM tích hợp AI, và các phân hệ lõi của một ERP nội bộ (kế toán, hợp đồng, lương, KPI kinh doanh) vẫn được dùng hằng ngày.
-
-Năm 2026 mình lập [HC Labs](https://hclabs.co), một studio phần mềm nhỏ. HC Labs làm phần mềm vận hành cho doanh nghiệp Việt Nam, và mình vẫn là người trực tiếp nói chuyện với khách, thiết kế hệ thống và đọc code.
+Từ 2019 mình làm tại [Stringee](https://stringee.com), nơi cung cấp communication API và tổng đài đa kênh StringeeX. Mình làm full-stack, chủ yếu là web app và API. Từ 2024 mình làm thêm [Cogover](https://cogover.com), nền tảng quản trị doanh nghiệp low-code, và phụ trách phân hệ billing và subscription.
 
 ## Mình viết gì ở đây
 
-Mình đang học cách xây một doanh nghiệp một cách công khai (build in public): quyết định và lý do, những chỗ làm sai, và điều học được từ khách hàng và những người cùng làm. Sản phẩm xuất hiện như một phần của câu chuyện đó.
+Công việc thật khi làm phần mềm: quyết định và lý do, những chỗ làm sai, và điều học được từ khách hàng và các kỹ sư khác. Mình đang tập chia sẻ công khai việc này.
 
 Phần lớn bài viết bằng tiếng Anh. Bài nào chưa có bản tiếng Việt sẽ hiện bản tiếng Anh.
 
 ## Công cụ
 
-Go, TypeScript, React, Vue và PostgreSQL. Gần đây dùng nhiều AI coding agent, và các cơ chế để chúng làm đúng.
+React, TypeScript, Vue, PHP, Go, MySQL và PostgreSQL. Gần đây dùng nhiều AI coding agent, và các cơ chế để chúng làm đúng.
 
 ## Liên hệ
 

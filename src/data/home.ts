@@ -6,15 +6,15 @@ export const hero: Record<Locale, { greeting: string; paragraphs: string[] }> =
     en: {
       greeting: "Hi, I'm Chinh.",
       paragraphs: [
-        "I build software in Hanoi. Seven years of contact center, CRM and ERP work, and since 2026 a small studio of my own, HC Labs.",
-        "I'm learning to build a business in public. Here I write about the real work: decisions, mistakes, and what customers and other builders teach me.",
+        "I'm a full-stack engineer in Hanoi. I have worked at Stringee since 2019, on communication APIs and the StringeeX contact center, and on Cogover since 2024.",
+        "Here I write about the real work of building software: decisions, mistakes, and what customers and other engineers teach me.",
       ],
     },
     vi: {
       greeting: "Chào bạn, mình là Chính.",
       paragraphs: [
-        "Mình làm phần mềm ở Hà Nội. Bảy năm làm tổng đài, CRM và ERP, và từ 2026 có một studio nhỏ của riêng mình, HC Labs.",
-        "Mình đang học cách xây doanh nghiệp một cách công khai. Ở đây mình viết về việc thật: quyết định, sai lầm, và điều học được từ khách hàng và những người cùng làm.",
+        "Mình là kỹ sư full-stack ở Hà Nội. Mình làm tại Stringee từ 2019, với communication API và tổng đài StringeeX, và làm Cogover từ 2024.",
+        "Ở đây mình viết về công việc thật khi làm phần mềm: quyết định, sai lầm, và điều học được từ khách hàng và các kỹ sư khác.",
       ],
     },
   };

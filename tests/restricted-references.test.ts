@@ -2,15 +2,10 @@ import assert from "node:assert/strict";
 import { readFile, readdir } from "node:fs/promises";
 import test from "node:test";
 
-// Public copy must not identify the author's employer, past or present, nor
-// name a customer without consent. Past work is framed by domain and years
-// ("seven years at a cloud communications platform"), the same rule hclabs.co
-// follows.
-const NAMED = /\b(Stringee|StringeeX|Cogover|VIB|TPBank|HDBank|Hanwha Life|PTI|Be Finance|Hảo Đạt|Hao Dat|chehaodat)\b/i;
-
-// A superlative turns a domain description into a unique identifier: there is
-// exactly one "largest communications platform in Vietnam".
-const SUPERLATIVE = /(lớn nhất (Việt Nam|VN)|(largest|leading|biggest)[^.\n]{0,40}(Vietnam|VN))/i;
+// The site presents Chinh's work at Stringee and Cogover only. It must not name
+// his own companies or side products, nor any customer.
+const NAMED =
+  /\b(HC ?Labs|hclabs|Portside|1Mạch|1Mach|Rinh|VIB|TPBank|HDBank|Hanwha Life|PTI|Be Finance|Hảo Đạt|Hao Dat|chehaodat)\b/i;
 
 async function collectFiles(dir: URL): Promise<URL[]> {
   const entries = await readdir(dir, { withFileTypes: true });
@@ -38,10 +33,6 @@ async function offendersFor(pattern: RegExp) {
   return offenders.sort();
 }
 
-test("public copy does not name an employer or a customer", async () => {
+test("public copy does not name own companies, side products or customers", async () => {
   assert.deepEqual(await offendersFor(NAMED), []);
-});
-
-test("public copy does not identify an employer by superlative", async () => {
-  assert.deepEqual(await offendersFor(SUPERLATIVE), []);
 });

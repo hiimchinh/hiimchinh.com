@@ -33,10 +33,12 @@ another pnpm globally and never commit a lockfile written by another version.
 
 ## Non-negotiables
 
-1. **Never name an employer (past or present) or a customer** in public copy. Frame
-   past work by domain and years, e.g. "seven years at a cloud communications
-   platform". No superlatives that identify a company ("largest … in Vietnam").
-   `tests/restricted-references.test.ts` enforces this.
+1. **Work shown here is Stringee and Cogover only.** Never name Chinh's own
+   companies or side products (HC Labs, Portside, …) or any customer. Chinh has
+   a confidentiality duty to Stringee: describe only what the products say
+   publicly and his own role. No internal numbers, internal systems, customer
+   projects or unreleased features. `tests/restricted-references.test.ts`
+   enforces the names.
 2. **No invented facts.** Achievements, numbers and project details come from the
    owner. Ask when unsure.
 3. **Keep old URLs working.** Every moved URL gets a 301 in `public/_redirects`

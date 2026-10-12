@@ -31,7 +31,12 @@ const personJsonLd = {
   name: config.site.author,
   alternateName: "Hoàng Minh Chính",
   url: config.site.url,
-  jobTitle: "Founder, HC Labs",
+  jobTitle: "Senior Full-stack Engineer",
+  worksFor: {
+    "@type": "Organization",
+    name: "Stringee",
+    url: "https://stringee.com",
+  },
   sameAs: config.socials.filter(s => s.name !== "mail").map(s => s.url),
 };
 const projects = await getProjects(locale);

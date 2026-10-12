@@ -15,7 +15,7 @@ export const GET: APIRoute = async () => {
     "",
     `> ${config.site.description}`,
     "",
-    "Personal site of Chinh Hoang (Hoàng Minh Chính): blog and portfolio. English is the primary language; some pages have Vietnamese versions under /vi/.",
+    "Personal site of Chinh Hoang (Hoàng Minh Chính): blog and portfolio of his work at Stringee and Cogover. English is the primary language; some pages have Vietnamese versions under /vi/.",
     "",
     "## Posts",
     "",

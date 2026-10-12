@@ -5,7 +5,7 @@ export default defineAstroPaperConfig({
     url: "https://hiimchinh.com/",
     title: "Chinh Hoang",
     description:
-      "Software builder from Hanoi. Learning to build a business and writing down what I learn along the way.",
+      "Full-stack engineer in Hanoi, working on Stringee and Cogover. Notes on building software.",
     author: "Chinh Hoang",
     profile: "https://hiimchinh.com/about/",
     lang: "en",
