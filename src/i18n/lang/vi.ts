@@ -25,6 +25,9 @@ export default {
     nextPost: "Bài sau",
     onlyInEnglish: "Bài này hiện chỉ có bản tiếng Anh.",
     rawMarkdown: "Markdown",
+    copyForLlm: "Copy cho LLM",
+    copiedForLlm: "Đã copy",
+    openIn: "Mở trong",
   },
   pagination: {
     prev: "Trước",

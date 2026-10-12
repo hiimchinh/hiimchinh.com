@@ -25,6 +25,9 @@ export default {
     nextPost: "Next Post",
     onlyInEnglish: "This post is only available in English.",
     rawMarkdown: "Markdown",
+    copyForLlm: "Copy for LLM",
+    copiedForLlm: "Copied",
+    openIn: "Open in",
   },
   pagination: {
     prev: "Prev",

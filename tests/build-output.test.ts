@@ -66,3 +66,10 @@ test("llms.txt indexes the site for agents", () => {
 test("the home page describes the author as a Person in JSON-LD", () => {
   assert.match(read("index.html"), /"@type":"Person","name":"Chinh Hoang"/);
 });
+
+test("each post offers copy-for-LLM and open-in-chat actions", () => {
+  const html = read("posts/translate-file-permissions-linux/index.html");
+  assert.match(html, /data-copy-markdown="\/posts\/translate-file-permissions-linux\.md"/);
+  assert.match(html, /href="https:\/\/chatgpt\.com\/\?q=Read%20https%3A%2F%2Fhiimchinh\.com%2Fposts%2Ftranslate-file-permissions-linux\.md/);
+  assert.match(html, /href="https:\/\/claude\.ai\/new\?q=Read%20https%3A%2F%2Fhiimchinh\.com/);
+});
