@@ -23,6 +23,9 @@ export interface UIStrings {
     nextPost: string;
     onlyInEnglish: string;
     rawMarkdown: string;
+    copyForLlm: string;
+    copiedForLlm: string;
+    openIn: string;
   };
   pagination: {
     prev: string;

@@ -6,6 +6,7 @@ import Footer from "@/components/Footer.astro";
 import Datetime from "@/components/Datetime.astro";
 import Tag from "@/components/Tag.astro";
 import { getPostUrl } from "@/utils/getPostPaths";
+import { llmChatLinks } from "@/utils/llm-links";
 import {
   getPostStaticPaths,
   type PostPageProps,
@@ -60,6 +61,7 @@ if (!ogImageUrl && config.features.dynamicOgImage) {
 const englishUrl = new URL(getPostUrl(post.id, post.filePath, "en"), Astro.site)
   .href;
 const markdownUrl = `${getPostUrl(post.id, post.filePath, "en").replace(/\/+$/, "")}.md`;
+const chatLinks = llmChatLinks(new URL(markdownUrl, Astro.site).href);
 const pageCanonicalURL = canonicalURL ?? (isFallback ? englishUrl : undefined);
 
 const ogImage = ogImageUrl
@@ -111,6 +113,34 @@ const ogImage = ogImageUrl
       >
         {t.post.rawMarkdown}
       </a>
+    </div>
+
+    <div
+      class="text-muted-foreground flex flex-wrap items-center gap-x-2 text-sm"
+    >
+      <button
+        type="button"
+        data-copy-markdown={markdownUrl}
+        data-copied-label={t.post.copiedForLlm}
+        class="hover:text-accent underline decoration-dashed underline-offset-4"
+      >
+        {t.post.copyForLlm}
+      </button>
+      {
+        chatLinks.map(link => (
+          <>
+            <span aria-hidden="true">|</span>
+            <a
+              href={link.href}
+              target="_blank"
+              rel="noopener"
+              class="hover:text-accent underline decoration-dashed underline-offset-4"
+            >
+              {t.post.openIn} {link.name}
+            </a>
+          </>
+        ))
+      }
     </div>
 
     {
@@ -249,6 +279,26 @@ const ogImage = ogImageUrl
     }
   }
   attachCopyButtons();
+
+  /** Copies the post's raw Markdown so it can be pasted into an LLM chat. */
+  function attachCopyMarkdown() {
+    const button = document.querySelector("[data-copy-markdown]");
+    if (!button) return;
+    const label = button.innerText;
+    button.addEventListener("click", async () => {
+      try {
+        const res = await fetch(button.dataset.copyMarkdown);
+        if (!res.ok) throw new Error(`HTTP ${res.status}`);
+        await navigator.clipboard.writeText(await res.text());
+        button.innerText = button.dataset.copiedLabel;
+      } catch {
+        window.location.href = button.dataset.copyMarkdown;
+        return;
+      }
+      setTimeout(() => (button.innerText = label), 1500);
+    });
+  }
+  attachCopyMarkdown();
 
   /** Accessible image lightbox for article images. */
   function initLightbox() {
