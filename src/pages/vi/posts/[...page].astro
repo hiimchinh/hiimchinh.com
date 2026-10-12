@@ -1,0 +1,15 @@
+---
+import type { GetStaticPaths } from "astro";
+import PostsPage from "../../posts/[...page].astro";
+import { getLocalizedPosts } from "@/utils/getLocalizedPosts";
+import config from "@/config";
+
+export const getStaticPaths = (async ({ paginate }) =>
+  paginate(await getLocalizedPosts("vi"), {
+    pageSize: config.posts.perPage,
+  })) satisfies GetStaticPaths;
+
+const { page } = Astro.props;
+---
+
+<PostsPage {page} />

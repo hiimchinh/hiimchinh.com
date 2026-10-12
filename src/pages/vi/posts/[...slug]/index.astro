@@ -1,0 +1,13 @@
+---
+import PostPage from "../../../posts/[...slug]/index.astro";
+import {
+  getPostStaticPaths,
+  type PostPageProps,
+} from "@/utils/getPostStaticPaths";
+
+export const getStaticPaths = () => getPostStaticPaths("vi");
+
+type Props = PostPageProps;
+---
+
+<PostPage {...Astro.props} />
