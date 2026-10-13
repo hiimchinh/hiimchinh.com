@@ -10,9 +10,13 @@ import config from "@/config";
 import { toLocale } from "@/utils/getLocalizedPosts";
 
 const locale = toLocale(Astro.currentLocale);
-const about =
-  (await getEntry("pages", `${locale}/about`)) ??
-  (await getEntry("pages", "en/about"));
+const translation = await getEntry("pages", `${locale}/about`);
+const about = translation ?? (await getEntry("pages", "en/about"));
+// Without its own translation the page is a copy of the English one.
+const englishURL = new URL("/about/", Astro.site).href;
+const hasBothLanguages = Boolean(
+  (await getEntry("pages", "en/about")) && (await getEntry("pages", "vi/about"))
+);
 
 if (!about) {
   throw new Error(
@@ -27,7 +31,9 @@ const { Content } = await render(about);
   title={`${about.data.title} | ${config.site.title}`}
   description={about.data.description}
   ogImage={about.data.ogImage}
-  canonicalURL={about.data.canonicalURL}
+  canonicalURL={about.data.canonicalURL ??
+    (translation ? undefined : englishURL)}
+  translated={hasBothLanguages}
 >
   <Header />
 

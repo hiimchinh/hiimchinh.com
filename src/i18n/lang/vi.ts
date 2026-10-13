@@ -65,6 +65,16 @@ export default {
     projectsTitle: "Dự án",
     projectsDesc: "Những thứ mình đã và đang làm.",
   },
+  meta: {
+    homeDesc:
+      "Kỹ sư full-stack ở Hà Nội, làm Stringee và Cogover. Ghi chép về việc làm phần mềm.",
+    postsDesc:
+      "Tất cả bài viết của Chinh Hoang về việc làm phần mềm, mới nhất trước.",
+    tagsDesc: "Các chủ đề trong bài viết của Chinh Hoang, theo thẻ.",
+    tagDesc: 'Bài viết của Chinh Hoang có thẻ "{{tag}}".',
+    archivesDesc: "Bài viết của Chinh Hoang theo năm và tháng.",
+    searchDesc: "Tìm bài viết trên trang của Chinh Hoang.",
+  },
   projectStatus: {
     active: "Đang làm",
     paused: "Tạm dừng",

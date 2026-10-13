@@ -63,6 +63,16 @@ export interface UIStrings {
     projectsTitle: string;
     projectsDesc: string;
   };
+  /** Meta descriptions for listing pages; each must be unique on the site. */
+  meta: {
+    homeDesc: string;
+    postsDesc: string;
+    tagsDesc: string;
+    /** Uses the {{tag}} placeholder. */
+    tagDesc: string;
+    archivesDesc: string;
+    searchDesc: string;
+  };
   projectStatus: {
     active: string;
     paused: string;
