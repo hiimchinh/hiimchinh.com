@@ -73,3 +73,77 @@ test("each post offers copy-for-LLM and open-in-chat actions", () => {
   assert.match(html, /href="https:\/\/chatgpt\.com\/\?q=Read%20https%3A%2F%2Fhiimchinh\.com%2Fposts%2Ftranslate-file-permissions-linux\.md/);
   assert.match(html, /href="https:\/\/claude\.ai\/new\?q=Read%20https%3A%2F%2Fhiimchinh\.com/);
 });
+
+const SITE = "https://hiimchinh.com";
+const canonicalOf = (html: string) =>
+  html.match(/<link rel="canonical" href="([^"]*)"/)?.[1];
+const hreflangsOf = (html: string) =>
+  [...html.matchAll(/<link rel="alternate" hreflang="([^"]*)" href="([^"]*)"/g)].map(
+    ([, lang, href]) => [lang, href]
+  );
+const descriptionOf = (html: string) =>
+  html.match(/<meta name="description" content="([^"]*)"/)?.[1];
+const robotsOf = (html: string) =>
+  html.match(/<meta name="robots" content="([^"]*)"/)?.[1];
+const sitemapUrls = () =>
+  [...read("sitemap-0.xml").matchAll(/<loc>([^<]*)<\/loc>/g)].map(m => m[1]);
+
+test("Vietnamese pages with Vietnamese content are their own canonical", () => {
+  for (const path of ["/vi/", "/vi/about/", "/vi/posts/", "/vi/tags/", "/vi/archives/", "/vi/projects/"]) {
+    const html = read(`${path.slice(1)}index.html`);
+    assert.equal(canonicalOf(html), `${SITE}${path}`, path);
+    assert.equal(robotsOf(html), undefined, path);
+  }
+});
+
+test("the Vietnamese about page pairs with the English one through hreflang", () => {
+  assert.deepEqual(hreflangsOf(read("vi/about/index.html")), [
+    ["en", `${SITE}/about/`],
+    ["vi", `${SITE}/vi/about/`],
+    ["x-default", `${SITE}/about/`],
+  ]);
+});
+
+test("a post without a translation declares no Vietnamese alternate", () => {
+  const vi = read("vi/posts/translate-file-permissions-linux/index.html");
+  assert.equal(canonicalOf(vi), `${SITE}${NEW_POST}`);
+  assert.deepEqual(hreflangsOf(vi), []);
+  const en = read("posts/translate-file-permissions-linux/index.html");
+  assert.equal(canonicalOf(en), `${SITE}${NEW_POST}`);
+  assert.ok(!hreflangsOf(en).some(([lang]) => lang === "vi"));
+});
+
+test("the sitemap lists only indexable, self-canonical pages", () => {
+  const urls = sitemapUrls();
+  for (const url of [`${SITE}/`, `${SITE}/vi/`, `${SITE}/about/`, `${SITE}/vi/about/`, `${SITE}${NEW_POST}`]) {
+    assert.ok(urls.includes(url), `missing ${url}`);
+  }
+  for (const url of [
+    `${SITE}/vi/404/`,
+    `${SITE}/search/`,
+    `${SITE}/vi/search/`,
+    `${SITE}/vi${NEW_POST}`,
+    `${SITE}/tags/linux/`,
+  ]) {
+    assert.ok(!urls.includes(url), `unexpected ${url}`);
+  }
+});
+
+test("search and 404 pages are noindex", () => {
+  for (const path of ["search/index.html", "vi/search/index.html", "404.html", "vi/404/index.html"]) {
+    assert.match(robotsOf(read(path)) ?? "", /noindex/, path);
+  }
+});
+
+test("a tag page with a single post is noindex, follow", () => {
+  assert.equal(robotsOf(read("tags/linux/index.html")), "noindex, follow");
+  assert.equal(robotsOf(read("vi/tags/linux/index.html")), "noindex, follow");
+});
+
+test("listing pages have distinct meta descriptions in both languages", () => {
+  const listings = ["", "posts/", "tags/", "tags/linux/", "archives/", "projects/", "search/"];
+  const paths = [...listings, ...listings.map(p => `vi/${p}`)];
+  const descriptions = paths.map(p => descriptionOf(read(`${p}index.html`)));
+  descriptions.forEach((d, i) => assert.ok(d, `no description on /${paths[i]}`));
+  assert.equal(new Set(descriptions).size, paths.length, descriptions.join("\n"));
+});

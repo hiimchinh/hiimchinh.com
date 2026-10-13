@@ -11,7 +11,8 @@ import Pagination from "@/components/Pagination.astro";
 import { getUniqueTags } from "@/utils/getUniqueTags";
 import { getSortedPosts } from "@/utils/getSortedPosts";
 import { slugifyAll } from "@/utils/slugify";
-import { useTranslations } from "@/i18n";
+import { tplStr, useTranslations } from "@/i18n";
+import { listingRobots } from "@/utils/seo";
 import config from "@/config";
 
 export async function getStaticPaths({ paginate }: GetStaticPathsOptions) {
@@ -37,7 +38,14 @@ const locale = Astro.currentLocale ?? config.site.lang;
 const t = useTranslations(locale);
 ---
 
-<Layout title={`${t.pages.tagTitle}: ${tagName} | ${config.site.title}`}>
+<Layout
+  title={`${t.pages.tagTitle}: ${tagName} | ${config.site.title}`}
+  description={tplStr(t.meta.tagDesc, { tag: tagName })}
+  robots={listingRobots({
+    currentPage: page.currentPage,
+    tagPostCount: page.total,
+  })}
+>
   <Header />
 
   <Breadcrumb />

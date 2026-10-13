@@ -65,6 +65,15 @@ export default {
     projectsTitle: "Projects",
     projectsDesc: "Things I have built or am building.",
   },
+  meta: {
+    homeDesc:
+      "Full-stack engineer in Hanoi, working on Stringee and Cogover. Notes on building software.",
+    postsDesc: "All posts by Chinh Hoang on building software, newest first.",
+    tagsDesc: "Topics in Chinh Hoang's posts, grouped by tag.",
+    tagDesc: 'Posts by Chinh Hoang tagged "{{tag}}".',
+    archivesDesc: "Chinh Hoang's posts by year and month.",
+    searchDesc: "Search the posts on Chinh Hoang's site.",
+  },
   projectStatus: {
     active: "Active",
     paused: "Paused",

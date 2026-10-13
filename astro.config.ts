@@ -1,3 +1,4 @@
+import { fileURLToPath } from "node:url";
 import {
   defineConfig,
   envField,
@@ -18,6 +19,11 @@ import {
 } from "@shikijs/transformers";
 import { transformerFileName } from "./src/utils/transformers/fileName";
 import config from "./astro-paper.config";
+import { createSitemapFilter } from "./src/utils/seo";
+
+const isIndexable = createSitemapFilter(
+  fileURLToPath(new URL("./dist/", import.meta.url))
+);
 
 export default defineConfig({
   site: config.site.url,
@@ -25,7 +31,9 @@ export default defineConfig({
     mdx(),
     sitemap({
       filter: page =>
-        config.features?.showArchives !== false || !page.endsWith("/archives/"),
+        (config.features?.showArchives !== false ||
+          !page.endsWith("/archives/")) &&
+        isIndexable(page),
     }),
   ],
   i18n: {

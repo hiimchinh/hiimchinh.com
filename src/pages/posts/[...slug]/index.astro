@@ -25,7 +25,7 @@ export const getStaticPaths = () => getPostStaticPaths("en");
 
 type Props = PostPageProps;
 
-const { post, prevPost, nextPost, isFallback } = Astro.props;
+const { post, prevPost, nextPost, isFallback, translations } = Astro.props;
 const locale = Astro.currentLocale ?? config.site.lang;
 const t = useTranslations(locale);
 
@@ -74,6 +74,7 @@ const ogImage = ogImageUrl
   description={description}
   ogImage={ogImage}
   canonicalURL={pageCanonicalURL}
+  translated={translations.includes("en") && translations.includes("vi")}
   pubDatetime={pubDatetime}
   modDatetime={modDatetime}
 >

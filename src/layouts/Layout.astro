@@ -12,48 +12,53 @@ type Props = {
   description?: string;
   ogImage?: string;
   canonicalURL?: string;
+  /** Robots directive, e.g. "noindex, follow". */
+  robots?: string;
+  /** False when this page has no real counterpart in the other language. */
+  translated?: boolean;
 };
 
 const { site } = config;
+const locale = Astro.currentLocale ?? site.lang;
+
+// i18n fallback rewrites /vi/about/ to the /about/ route, so Astro.url holds
+// the English path. Rebuild the URL that was actually requested.
+const pathWithoutLocale = stripLocale(Astro.url.pathname, "vi").replace(
+  /^\//,
+  ""
+);
+const localeUrl = (lang: string) =>
+  new URL(getRelativeLocaleUrl(lang, pathWithoutLocale), Astro.site).href;
+const selfURL = localeUrl(locale);
 
 const {
   title = site.title,
   description = site.description,
   ogImage = resolveDefaultOgImagePath(config),
-  canonicalURL = new URL(Astro.url.pathname, Astro.site).href,
+  canonicalURL = selfURL,
+  robots,
+  translated = true,
 } = Astro.props;
 
 const socialImageURL = new URL(ogImage, Astro.site ?? Astro.url);
 
-// Every page exists in both languages (Vietnamese falls back to English).
-const pathWithoutLocale = stripLocale(Astro.url.pathname, "vi").replace(
-  /^\//,
-  ""
-);
-const alternates = [
-  {
-    hreflang: "en",
-    href: new URL(getRelativeLocaleUrl("en", pathWithoutLocale), Astro.site),
-  },
-  {
-    hreflang: "vi",
-    href: new URL(getRelativeLocaleUrl("vi", pathWithoutLocale), Astro.site),
-  },
-  {
-    hreflang: "x-default",
-    href: new URL(getRelativeLocaleUrl("en", pathWithoutLocale), Astro.site),
-  },
-];
-const rssHref = getRelativeLocaleUrl(
-  Astro.currentLocale ?? config.site.lang,
-  "rss.xml"
-);
+// hreflang only links pages that are indexable and canonical in both languages.
+const isNoindex = robots !== undefined && /\bnoindex\b/i.test(robots);
+const alternates =
+  translated && !isNoindex && canonicalURL === selfURL
+    ? [
+        { hreflang: "en", href: localeUrl("en") },
+        { hreflang: "vi", href: localeUrl("vi") },
+        { hreflang: "x-default", href: localeUrl("en") },
+      ]
+    : [];
+const rssHref = getRelativeLocaleUrl(locale, "rss.xml");
 ---
 
 <!doctype html>
 <html
   dir={site.dir ?? "ltr"}
-  lang={Astro.currentLocale ?? site.lang}
+  lang={locale}
   class="overflow-y-scroll scroll-smooth"
 >
   <head>
@@ -62,6 +67,7 @@ const rssHref = getRelativeLocaleUrl(
     <link rel="icon" type="image/svg+xml" href={getAssetPath("favicon.svg")} />
     <link rel="icon" href={getAssetPath("favicon.ico")} />
     <link rel="canonical" href={canonicalURL} />
+    {robots && <meta name="robots" content={robots} />}
     {
       alternates.map(({ hreflang, href }) => (
         <link rel="alternate" hreflang={hreflang} href={href} />

@@ -42,7 +42,7 @@ const personJsonLd = {
 const projects = await getProjects(locale);
 ---
 
-<Layout>
+<Layout description={t.meta.homeDesc}>
   <script
     slot="head"
     type="application/ld+json"
