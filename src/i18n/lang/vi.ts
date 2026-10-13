@@ -69,11 +69,11 @@ export default {
     homeDesc:
       "Kỹ sư full-stack ở Hà Nội, làm Stringee và Cogover. Ghi chép về việc làm phần mềm.",
     postsDesc:
-      "Tất cả bài viết của Chinh Hoang về việc làm phần mềm, mới nhất trước.",
-    tagsDesc: "Các chủ đề trong bài viết của Chinh Hoang, theo thẻ.",
-    tagDesc: 'Bài viết của Chinh Hoang có thẻ "{{tag}}".',
-    archivesDesc: "Bài viết của Chinh Hoang theo năm và tháng.",
-    searchDesc: "Tìm bài viết trên trang của Chinh Hoang.",
+      "Tất cả bài viết của Chính về việc làm phần mềm, xếp từ mới đến cũ.",
+    tagsDesc: "Các chủ đề trong bài viết của Chính, theo thẻ.",
+    tagDesc: 'Bài viết của Chính có thẻ "{{tag}}".',
+    archivesDesc: "Bài viết của Chính theo năm và tháng.",
+    searchDesc: "Tìm bài viết trên trang của Chính.",
   },
   projectStatus: {
     active: "Đang làm",
