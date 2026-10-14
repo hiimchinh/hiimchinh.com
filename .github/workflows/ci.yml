@@ -42,6 +42,61 @@ jobs:
           path: dist
           retention-days: 7
 
+  preview:
+    name: Preview on Cloudflare Workers
+    needs: check
+    # Secrets are not available to pull requests from forks.
+    if: >-
+      github.event_name == 'pull_request' &&
+      github.event.pull_request.head.repo.full_name == github.repository
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    permissions:
+      contents: read
+      pull-requests: write
+    steps:
+      - uses: actions/checkout@v4
+      - uses: pnpm/action-setup@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "24"
+          cache: "pnpm"
+      - run: pnpm install --frozen-lockfile
+      # Shows drafts and marks every page noindex.
+      - run: pnpm run build
+        env:
+          SITE_PREVIEW: "true"
+      - run: pnpm run test:preview
+      # Uploads a version without deploying it; production keeps serving main.
+      - name: Upload preview version
+        id: upload
+        run: |
+          pnpm exec wrangler versions upload --preview-alias "pr-$PR_NUMBER" | tee upload.log
+          url=$(grep -oE 'https://pr-[0-9]+-[a-z0-9.-]+\.workers\.dev' upload.log | head -1)
+          test -n "$url"
+          echo "url=$url" >> "$GITHUB_OUTPUT"
+        env:
+          PR_NUMBER: ${{ github.event.pull_request.number }}
+          CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+      - name: Smoke test
+        run: |
+          code=$(curl -s -o /dev/null -w '%{http_code}' "$URL/")
+          echo "/ $code"
+          test "$code" = 200
+        env:
+          URL: ${{ steps.upload.outputs.url }}
+      - name: Comment the preview link
+        run: |
+          gh pr comment "$PR_NUMBER" --edit-last --create-if-none \
+            --body "Preview (drafts included, noindex): $URL"$'\n\n'"Commit: $SHA"
+        env:
+          GH_TOKEN: ${{ github.token }}
+          GH_REPO: ${{ github.repository }}
+          PR_NUMBER: ${{ github.event.pull_request.number }}
+          URL: ${{ steps.upload.outputs.url }}
+          SHA: ${{ github.event.pull_request.head.sha }}
+
   deploy:
     name: Deploy to Cloudflare Workers
     needs: check

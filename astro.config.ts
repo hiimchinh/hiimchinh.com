@@ -96,6 +96,12 @@ export default defineConfig({
         context: "client",
         optional: true,
       }),
+      // Pull-request preview build: shows drafts and marks every page noindex.
+      SITE_PREVIEW: envField.boolean({
+        access: "public",
+        context: "server",
+        default: false,
+      }),
     },
   },
   experimental: {

@@ -1,16 +1,17 @@
 import type { CollectionEntry } from "astro:content";
+import { SITE_PREVIEW } from "astro:env/server";
 import config from "@/config";
+import { isPostVisible } from "./post-visibility";
 
 /**
  * Determines whether a post is eligible to be listed/rendered.
- *
- * - Excludes drafts always
- * - In production, excludes scheduled posts until `pubDatetime` minus the configured margin
- * - In dev, always shows non-draft posts to make authoring easier
+ * Rules live in `isPostVisible()`; this binds them to the current build.
  */
 export function postFilter({ data }: CollectionEntry<"posts">) {
-  const isPublishTimePassed =
-    Date.now() >
-    new Date(data.pubDatetime).getTime() - config.posts.scheduledPostMargin;
-  return !data.draft && (import.meta.env.DEV || isPublishTimePassed);
+  return isPostVisible(data, {
+    now: Date.now(),
+    scheduledMargin: config.posts.scheduledPostMargin,
+    dev: import.meta.env.DEV,
+    preview: SITE_PREVIEW,
+  });
 }
