@@ -1,0 +1,54 @@
+---
+// Contents of a long post. `rail`: sticky column left of the reading column on
+// wide screens. `inline`: a collapsed list above the post on narrower screens.
+// The section being read is marked by the script in the post page.
+import type { TocEntry } from "@/utils/toc";
+
+type Props = {
+  entries: TocEntry[];
+  label: string;
+  variant: "rail" | "inline";
+};
+
+const { entries, label, variant } = Astro.props;
+---
+
+{
+  entries.length > 0 && variant === "inline" && (
+    <details class="border-border mt-8 rounded border px-4 py-3 xl:hidden">
+      <summary class="cursor-pointer text-sm font-semibold">{label}</summary>
+      <ol class="toc-list mt-2">
+        {entries.map(e => (
+          <li class:list={{ "toc-sub": e.sub }}>
+            <a href={`#${e.slug}`} data-toc-link={e.slug}>
+              {e.text}
+            </a>
+          </li>
+        ))}
+      </ol>
+    </details>
+  )
+}
+{
+  entries.length > 0 && variant === "rail" && (
+    <aside
+      aria-label={label}
+      class="absolute inset-y-0 end-[calc(100%+2.5rem)] hidden w-52 xl:block"
+    >
+      <nav class="sticky top-8 max-h-[calc(100vh-4rem)] overflow-y-auto pe-2">
+        <p class="text-muted-foreground mb-3 text-xs font-semibold tracking-widest uppercase">
+          {label}
+        </p>
+        <ol class="toc-list">
+          {entries.map(e => (
+            <li class:list={{ "toc-sub": e.sub }}>
+              <a href={`#${e.slug}`} data-toc-link={e.slug}>
+                {e.text}
+              </a>
+            </li>
+          ))}
+        </ol>
+      </nav>
+    </aside>
+  )
+}

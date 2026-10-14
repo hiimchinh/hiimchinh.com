@@ -5,12 +5,16 @@ pubDatetime: 2021-05-01T00:00:00+07:00
 tags: ["linux"]
 ---
 
+## The four numbers
+
 If you want to use `chmod` to change the permission of a file or directory. You just need to remember that:
 
 - 0: no permission
 - 1: execute
 - 2: write
 - 4: read
+
+## Adding them up
 
 With this you can add up the permission you want to change. For example:
 
