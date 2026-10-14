@@ -19,6 +19,23 @@ I moved my personal site this way in October 2026: an old Hugo site on Netlify, 
 
 ## Table of contents
 
+## Does this guide apply to you?
+
+It applies when your site is **fully static**: the build produces a folder of HTML, CSS, JavaScript and images, and no page needs a server to render it.
+
+These Netlify features do **not** move with the files. Check for each one before you switch the domain:
+
+| On Netlify                                                                                                                     | On Workers static assets                                                                                                                           |
+| ------------------------------------------------------------------------------------------------------------------------------ | -------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Netlify Forms                                                                                                                  | Does not exist. Submissions stop arriving after the switch, with no error. Replace the form backend first, or keep the form on another service.    |
+| Netlify Functions, Edge Functions, Identity                                                                                    | Do not exist. They need Worker code, which is outside this guide.                                                                                  |
+| Server-side rendering (for example Next.js with SSR)                                                                           | Not served by a static assets setup. Follow Cloudflare's framework guide for your framework instead.                                               |
+| Redirects in `netlify.toml`                                                                                                    | Not read. Convert each rule to a line in `_redirects` (step 3).                                                                                    |
+| Headers in `netlify.toml`                                                                                                      | Not read. Move them to a `_headers` file in the build folder.                                                                                      |
+| `_redirects` rules with conditions (`Country=`, `Language=`, `Cookie=`), query parameter matching, or rewrites with status 404 | Not supported. Plain 301/302/303/307/308 redirects, splats (`*`), placeholders (`:name`) and 200 proxying to paths on the same site are supported. |
+
+Also note: everything in the build folder becomes public. Check that it holds no files you do not want to publish.
+
 ## 1. Serve the build folder as static assets
 
 This is the whole Wrangler configuration:
@@ -74,6 +91,23 @@ Two details:
 - **Use 301, not 302.** A 301 tells search engines the move is permanent, so the old URL's ranking moves to the new one.
 
 Put the file where your generator copies static files into the build folder. In Astro that is `public/`.
+
+If your redirects are in `netlify.toml`, convert each `[[redirects]]` block to one line. For example:
+
+```toml
+[[redirects]]
+  from = "/post/*"
+  to = "/posts/:splat"
+  status = 301
+```
+
+becomes:
+
+```text
+/post/* /posts/:splat 301
+```
+
+Then delete the block from `netlify.toml` only after the test in step 4 covers it. Workers do not read `netlify.toml`, so any rule left there stops working after the switch.
 
 ## 4. Add a test that fails when a redirect goes missing
 
@@ -131,7 +165,15 @@ curl -sI https://hiimchinh.com/2021/05/translate_file_permissions_linux/
 curl -sI https://hiimchinh.com/.env
 ```
 
-I expected three things: the home page returns 200 with no Netlify headers, the old post URL returns 301 to the new one, and `/.env` returns 403.
+What to expect:
+
+| Request      | Expected on Workers                                                   | Means the switch is not done                                                                                                                                                                                          |
+| ------------ | --------------------------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Home page    | `HTTP/2 200` and no `x-nf-request-id` header                          | An `x-nf-request-id` header (or `server: Netlify`): the request still reaches Netlify. If the domain is proxied by Cloudflare, `server: cloudflare` alone proves nothing, because it also appears in front of Netlify |
+| Old post URL | `HTTP/2 301` and `location: /posts/translate-file-permissions-linux/` | 404, or 200 from Netlify                                                                                                                                                                                              |
+| `/.env`      | `HTTP/2 403`, only if you added the scanner rule in step 6            | Without that rule, 404 is also fine                                                                                                                                                                                   |
+
+Run the same check for every line in your `_redirects` file, not only one.
 
 ## 8. Disconnect the Netlify site
 
