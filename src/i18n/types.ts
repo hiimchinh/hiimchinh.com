@@ -24,6 +24,8 @@ export interface UIStrings {
     onlyInEnglish: string;
     rawMarkdown: string;
     copyForLlm: string;
+    /** Heading of the contents list beside a long post. */
+    contents: string;
     copiedForLlm: string;
     openIn: string;
   };

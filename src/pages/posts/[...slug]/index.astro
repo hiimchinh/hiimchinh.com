@@ -19,6 +19,8 @@ import ShareLinks from "./_components/ShareLinks.astro";
 import BackButton from "./_components/BackButton.astro";
 import BackToTopButton from "./_components/BackToTopButton.astro";
 import AdjacentPostNav from "./_components/AdjacentPostNav.astro";
+import TableOfContents from "./_components/TableOfContents.astro";
+import { tocEntries } from "@/utils/toc";
 import config from "@/config";
 
 export const getStaticPaths = () => getPostStaticPaths("en");
@@ -41,7 +43,8 @@ const {
   hideEditPost,
 } = post.data;
 
-const { Content } = await render(post);
+const { Content, headings } = await render(post);
+const toc = tocEntries(headings);
 
 let ogImageUrl: string | undefined;
 
@@ -84,9 +87,14 @@ const ogImage = ogImageUrl
 
   <main
     id="main-content"
-    class:list={["app-layout", { "mt-8": !config.features.showBackButton }]}
+    class:list={[
+      "app-layout relative",
+      { "mt-8": !config.features.showBackButton },
+    ]}
     data-pagefind-body
   >
+    <TableOfContents entries={toc} label={t.post.contents} variant="rail" />
+
     <h1
       style={{ viewTransitionName: toTransitionName(post.id) }}
       class="text-accent inline-block text-2xl font-bold sm:text-3xl"
@@ -152,6 +160,8 @@ const ogImage = ogImageUrl
       )
     }
 
+    <TableOfContents entries={toc} label={t.post.contents} variant="inline" />
+
     <article
       id="article"
       lang={isFallback ? "en" : undefined}
@@ -215,6 +225,42 @@ const ogImage = ogImageUrl
     });
   }
   updateScrollProgress();
+
+  /** Marks the contents link of the section being read. */
+  function trackCurrentSection() {
+    const links = Array.from(document.querySelectorAll("[data-toc-link]"));
+    if (links.length === 0) return;
+    const headings = [...new Set(links.map(l => l.dataset.tocLink))]
+      .map(id => document.getElementById(id))
+      .filter(Boolean);
+    // A heading becomes current once it passes this line near the top.
+    const ACTIVE_OFFSET = 120;
+    let queued = false;
+    function update() {
+      queued = false;
+      let current;
+      for (const h of headings) {
+        if (h.getBoundingClientRect().top <= ACTIVE_OFFSET) current = h.id;
+        else break;
+      }
+      for (const l of links) {
+        if (l.dataset.tocLink === current)
+          l.setAttribute("aria-current", "true");
+        else l.removeAttribute("aria-current");
+      }
+    }
+    // The script reruns after each view transition; drop the previous listener.
+    if (window.__tocScroll) removeEventListener("scroll", window.__tocScroll);
+    window.__tocScroll = () => {
+      if (!queued) {
+        queued = true;
+        requestAnimationFrame(update);
+      }
+    };
+    addEventListener("scroll", window.__tocScroll, { passive: true });
+    update();
+  }
+  trackCurrentSection();
 
   function addHeadingLinks() {
     const headings = Array.from(

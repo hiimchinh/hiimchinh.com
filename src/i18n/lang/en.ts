@@ -26,6 +26,7 @@ export default {
     onlyInEnglish: "This post is only available in English.",
     rawMarkdown: "Markdown",
     copyForLlm: "Copy for LLM",
+    contents: "Contents",
     copiedForLlm: "Copied",
     openIn: "Open in",
   },

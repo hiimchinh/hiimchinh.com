@@ -26,6 +26,7 @@ export default {
     onlyInEnglish: "Bài này hiện chỉ có bản tiếng Anh.",
     rawMarkdown: "Markdown",
     copyForLlm: "Copy cho LLM",
+    contents: "Mục lục",
     copiedForLlm: "Đã copy",
     openIn: "Mở trong",
   },

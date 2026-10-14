@@ -14,7 +14,7 @@
     "format:check": "prettier --check .",
     "format": "prettier --write .",
     "lint": "eslint .",
-    "test": "node --test tests/locale-posts.test.ts tests/restricted-references.test.ts tests/llm-links.test.ts tests/seo.test.ts",
+    "test": "node --test tests/toc.test.ts tests/locale-posts.test.ts tests/restricted-references.test.ts tests/llm-links.test.ts tests/seo.test.ts",
     "test:build": "node --test tests/build-output.test.ts",
     "new-post": "node scripts/new-post.mjs",
     "deploy": "wrangler deploy"
