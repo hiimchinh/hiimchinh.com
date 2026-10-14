@@ -3,13 +3,19 @@ title: "How to move a static site from Netlify to Cloudflare Workers without bre
 description: "Serve a static site as Workers static assets, keep every old URL with a _redirects file and a test that fails when a redirect goes missing, then switch the domain and check it with curl."
 pubDatetime: 2026-10-14T17:30:00+07:00
 featured: true
-draft: true
 tags: ["cloudflare", "netlify"]
+audience: "Developers with a static site on Netlify who want to move it to Cloudflare Workers"
+readerQuestions:
+  - "Do I need to write any Worker code to host my static site on Cloudflare Workers?"
+  - "My site uses Netlify Forms for a contact form. Can I move it to Workers following this guide?"
+  - "My redirects are defined in netlify.toml, not in a _redirects file. What should I do?"
+  - "After switching the domain, how do I check the migration worked? Give me exact commands and the expected results."
+  - "I have a Next.js site with server-side rendering on Netlify. Does this guide apply to me?"
+readerCheck:
+  date: 2026-10-14
+  full: 5
+  total: 5
 ---
-
-<!-- DRAFT NOTES FOR CHINH (remove before publishing):
-1. Every number and step below comes from the migration on 12 October 2026. Correct anything that is wrong.
-2. Decide whether to say that a coding agent did most of the work. If yes, add one paragraph in your own words. -->
 
 If your static site runs on Netlify and you want it on Cloudflare, you can serve it from a Worker with no Worker code at all. The build output goes up as static assets, and Cloudflare serves it.
 
