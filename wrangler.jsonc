@@ -2,12 +2,14 @@
  * Static site on Cloudflare Workers (assets only, no Worker code).
  * `pnpm build` writes ./dist; CI runs `wrangler deploy` on every push to main.
  * public/_redirects carries the old Hugo URLs.
+ * Pull requests upload a version with a preview alias (pr-<number>) instead.
  */
 {
   "$schema": "node_modules/wrangler/config-schema.json",
   "name": "hiimchinh-com",
   "compatibility_date": "2026-10-01",
   "workers_dev": true,
+  "preview_urls": true,
   "assets": {
     "directory": "./dist",
     "html_handling": "auto-trailing-slash",

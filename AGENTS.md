@@ -52,7 +52,14 @@ another pnpm globally and never commit a lockfile written by another version.
 ## Deploy
 
 Push to `main` → GitHub Actions runs lint, tests, build, then `wrangler deploy`
-(Worker `hiimchinh-com`) and a smoke test. Secrets `CLOUDFLARE_API_TOKEN` and
+(Worker `hiimchinh-com`) and a smoke test.
+
+Every pull request from this repository gets a preview: CI builds with
+`SITE_PREVIEW=true` (drafts shown, every page `noindex, nofollow`, checked by
+`pnpm test:preview`), runs `wrangler versions upload --preview-alias pr-<number>`
+and comments the link (`https://pr-<number>-hiimchinh-com.ch-nh.workers.dev`) on
+the PR. Production is not touched. The link is public, so a draft must already be
+safe to show. Secrets `CLOUDFLARE_API_TOKEN` and
 `CLOUDFLARE_ACCOUNT_ID` are set on the repository. The token is narrow (Workers
 Scripts only) and is also stored in Bitwarden as
 "Cloudflare API token hiimchinh-site-deploy 2026-10-12". DNS for `hiimchinh.com`

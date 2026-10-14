@@ -5,6 +5,7 @@ import { getRelativeLocaleUrl } from "astro:i18n";
 import { resolveDefaultOgImagePath } from "@/utils/resolveDefaultOgImagePath";
 import { getAssetPath, stripLocale } from "@/utils/withBase";
 import config from "@/config";
+import { SITE_PREVIEW } from "astro:env/server";
 import "@/styles/global.css";
 
 type Props = {
@@ -36,9 +37,12 @@ const {
   description = site.description,
   ogImage = resolveDefaultOgImagePath(config),
   canonicalURL = selfURL,
-  robots,
+  robots: pageRobots,
   translated = true,
 } = Astro.props;
+
+// Preview builds carry drafts on a public URL; keep them out of search engines.
+const robots = SITE_PREVIEW ? "noindex, nofollow" : pageRobots;
 
 const socialImageURL = new URL(ogImage, Astro.site ?? Astro.url);
 
