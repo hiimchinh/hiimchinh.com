@@ -67,10 +67,10 @@ export default {
   },
   meta: {
     homeDesc:
-      "Kỹ sư full-stack ở Hà Nội, làm Stringee và Cogover. Ghi chép về việc làm phần mềm.",
+      "Kỹ sư full-stack ở Hà Nội, làm việc tại Stringee và Cogover. Ghi chép về việc làm phần mềm.",
     postsDesc:
       "Tất cả bài viết của Chính về việc làm phần mềm, xếp từ mới đến cũ.",
-    tagsDesc: "Các chủ đề trong bài viết của Chính, theo thẻ.",
+    tagsDesc: "Các chủ đề Chính viết, xếp theo thẻ.",
     tagDesc: 'Bài viết của Chính có thẻ "{{tag}}".',
     archivesDesc: "Bài viết của Chính theo năm và tháng.",
     searchDesc: "Tìm bài viết trên trang của Chính.",
@@ -89,6 +89,10 @@ export default {
     noResults: "Không có kết quả",
     goToPreviousPage: "Tới trang trước",
     goToNextPage: "Tới trang sau",
+  },
+  socials: {
+    email: "Gửi email cho {{name}}",
+    profile: "{{name}} trên {{network}}",
   },
   notFound: {
     title: "404 Không tìm thấy",

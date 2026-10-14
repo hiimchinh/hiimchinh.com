@@ -1,11 +1,11 @@
 ---
 title: "Giới thiệu"
-description: "Hoàng Minh Chính, kỹ sư full-stack ở Hà Nội, làm Stringee và Cogover."
+description: "Hoàng Minh Chính, kỹ sư full-stack ở Hà Nội, làm việc tại Stringee và Cogover."
 ---
 
 Chào bạn, mình là Chính (Hoàng Minh Chính), kỹ sư full-stack ở Hà Nội.
 
-Từ 2019 mình làm tại [Stringee](https://stringee.com), nơi cung cấp communication API và tổng đài đa kênh StringeeX. Mình làm full-stack, chủ yếu là web app và API. Từ 2024 mình làm thêm [Cogover](https://cogover.com), nền tảng quản trị doanh nghiệp low-code, và phụ trách phân hệ billing và subscription.
+Từ 2019 mình làm tại [Stringee](https://stringee.com), nơi cung cấp communication API và tổng đài đa kênh StringeeX. Mình làm full-stack, chủ yếu là web app và API. Từ 2024 mình làm thêm ở [Cogover](https://cogover.com), nền tảng quản trị doanh nghiệp low-code, và phụ trách phân hệ billing và subscription.
 
 ## Mình viết gì ở đây
 

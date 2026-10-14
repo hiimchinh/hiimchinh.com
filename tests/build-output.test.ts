@@ -48,7 +48,7 @@ test("pages declare both languages with hreflang", () => {
 
 test("each post has a raw Markdown copy for agents", () => {
   const md = read("posts/translate-file-permissions-linux.md");
-  assert.match(md, /^# File Permisisons in Linux\/Unix: How to translate them\?/);
+  assert.match(md, /^# File Permissions in Linux\/Unix: How to translate them\?/);
   assert.match(md, /- 4: read/);
 });
 
@@ -57,7 +57,7 @@ test("llms.txt indexes the site for agents", () => {
   assert.match(txt, /^# Chinh Hoang\n/);
   assert.match(
     txt,
-    /\[File Permisisons in Linux\/Unix: How to translate them\?\]\(https:\/\/hiimchinh\.com\/posts\/translate-file-permissions-linux\.md\)/
+    /\[File Permissions in Linux\/Unix: How to translate them\?\]\(https:\/\/hiimchinh\.com\/posts\/translate-file-permissions-linux\.md\)/
   );
   assert.match(txt, /## Projects/);
   assert.match(read("llms-full.txt"), /- 4: read/);
@@ -146,4 +146,31 @@ test("listing pages have distinct meta descriptions in both languages", () => {
   const descriptions = paths.map(p => descriptionOf(read(`${p}index.html`)));
   descriptions.forEach((d, i) => assert.ok(d, `no description on /${paths[i]}`));
   assert.equal(new Set(descriptions).size, paths.length, descriptions.join("\n"));
+});
+
+test("RSS autodiscovery points at the feed that exists", () => {
+  for (const path of ["index.html", "vi/index.html", "vi/about/index.html"]) {
+    const href = read(path).match(/<link rel="alternate" type="application\/rss\+xml"[^>]*href="([^"]*)"/)?.[1];
+    assert.equal(href, `${SITE}/rss.xml`, path);
+  }
+  assert.ok(exists("rss.xml"));
+});
+
+test("Vietnamese project cards are written in Vietnamese", () => {
+  const html = read("vi/projects/index.html");
+  assert.match(html, /2019 – nay/);
+  assert.doesNotMatch(html, /A low-code platform|2024 – now/);
+});
+
+test("social link labels follow the page language", () => {
+  const vi = read("vi/index.html");
+  assert.match(vi, /Chinh Hoang trên X/);
+  assert.match(vi, /Gửi email cho Chinh Hoang/);
+  assert.doesNotMatch(vi, /Chinh Hoang on X|Send an email to/);
+  assert.match(read("index.html"), /Chinh Hoang on X/);
+});
+
+test("the Vietnamese copy says where Chinh works, not that he builds the products", () => {
+  assert.match(descriptionOf(read("vi/index.html")) ?? "", /làm việc tại Stringee và Cogover/);
+  assert.match(descriptionOf(read("vi/about/index.html")) ?? "", /làm việc tại Stringee và Cogover/);
 });

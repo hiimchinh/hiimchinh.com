@@ -1,5 +1,5 @@
 ---
-title: "File Permisisons in Linux/Unix: How to translate them?"
+title: "File Permissions in Linux/Unix: How to translate them?"
 description: "In this tutorial, I'll show you how I learn to translate file permissions in Linux."
 pubDatetime: 2021-05-01T00:00:00+07:00
 tags: ["linux"]
