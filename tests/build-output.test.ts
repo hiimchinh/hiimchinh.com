@@ -174,3 +174,9 @@ test("the Vietnamese copy says where Chinh works, not that he builds the product
   assert.match(descriptionOf(read("vi/index.html")) ?? "", /làm việc tại Stringee và Cogover/);
   assert.match(descriptionOf(read("vi/about/index.html")) ?? "", /làm việc tại Stringee và Cogover/);
 });
+
+test("a post with two or more sections lists them in the contents", () => {
+  const html = read("posts/translate-file-permissions-linux/index.html");
+  assert.match(html, /data-toc-link="the-four-numbers"/);
+  assert.match(html, /data-toc-link="adding-them-up"/);
+});
