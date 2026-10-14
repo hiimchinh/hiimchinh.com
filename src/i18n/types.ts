@@ -88,6 +88,11 @@ export interface UIStrings {
     goToPreviousPage: string;
     goToNextPage: string;
   };
+  /** Labels for social links; use the {{name}} and {{network}} placeholders. */
+  socials: {
+    email: string;
+    profile: string;
+  };
   notFound: {
     title: string;
     message: string;

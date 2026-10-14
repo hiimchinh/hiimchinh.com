@@ -13,7 +13,7 @@ export const hero: Record<Locale, { greeting: string; paragraphs: string[] }> =
     vi: {
       greeting: "Chào bạn, mình là Chính.",
       paragraphs: [
-        "Mình là kỹ sư full-stack ở Hà Nội. Mình làm tại Stringee từ 2019, với communication API và tổng đài StringeeX, và làm Cogover từ 2024.",
+        "Mình là kỹ sư full-stack ở Hà Nội. Mình làm tại Stringee từ 2019, với communication API và tổng đài StringeeX, và làm thêm ở Cogover từ 2024.",
         "Ở đây mình viết về công việc thật khi làm phần mềm: quyết định, sai lầm, và điều học được từ khách hàng và các kỹ sư khác.",
       ],
     },

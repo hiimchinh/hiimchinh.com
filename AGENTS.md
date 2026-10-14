@@ -26,6 +26,7 @@ another pnpm globally and never commit a lockfile written by another version.
   canonical link to the English URL.
 - A post written only in Vietnamese lives only in `vi/` and is listed only under `/vi/`.
 - Projects (portfolio): `src/content/projects/en/<slug>.md`, sorted by `order`.
+  The Vietnamese card uses the same file name under `src/content/projects/vi/`.
 - About page: `src/content/pages/{en,vi}/about.md`. Home hero: `src/data/home.ts`.
 - UI strings: `src/i18n/lang/{en,vi}.ts`. Add a key to `src/i18n/types.ts` first.
 - Frontmatter is validated by `src/content.config.ts`; a wrong field fails the build.

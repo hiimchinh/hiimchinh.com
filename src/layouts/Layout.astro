@@ -52,7 +52,8 @@ const alternates =
         { hreflang: "x-default", href: localeUrl("en") },
       ]
     : [];
-const rssHref = getRelativeLocaleUrl(locale, "rss.xml");
+// One English feed for the whole site; there is no per-locale feed.
+const rssURL = new URL("rss.xml", Astro.site);
 ---
 
 <!doctype html>
@@ -109,7 +110,7 @@ const rssHref = getRelativeLocaleUrl(locale, "rss.xml");
       rel="alternate"
       type="application/rss+xml"
       title={site.title}
-      href={new URL(rssHref, Astro.site)}
+      href={rssURL}
     />
 
     <!-- Filled at runtime by theme.ts to match the current background colour -->

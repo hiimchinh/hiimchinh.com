@@ -89,6 +89,10 @@ export default {
     goToPreviousPage: "Go to previous page",
     goToNextPage: "Go to next page",
   },
+  socials: {
+    email: "Send an email to {{name}}",
+    profile: "{{name}} on {{network}}",
+  },
   notFound: {
     title: "404 Not Found",
     message: "Page Not Found",
