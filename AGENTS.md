@@ -32,6 +32,34 @@ another pnpm globally and never commit a lockfile written by another version.
 - Frontmatter is validated by `src/content.config.ts`; a wrong field fails the build.
 - New posts start with `draft: true`. Remove it to publish.
 
+## Writing a post
+
+Every post since 14 October 2026 follows this flow. The build fails on a
+published post that skips it (`src/utils/post-standards.ts`, checked in the
+content schema and `tests/post-standards.test.ts`).
+
+1. **Pick one reader.** Write `audience` in one line, e.g. "Developers with a
+   static site on Netlify who want to move it to Cloudflare Workers".
+2. **List their questions.** At least 3 in `readerQuestions`, phrased as that
+   reader would ask an AI assistant. Include one "does this apply to me?" and
+   one "how do I check it worked?".
+3. **Write the draft** (`pnpm new-post "Title"`, stays `draft: true`). Style:
+   task-shaped title ("How to …"), a description that states the result, a
+   "Does this guide apply to you?" section (what does not carry over), numbered
+   steps with real commands, and expected output for each check. Facts come
+   from the owner or from verified sources; never invent numbers. Notes for the
+   owner go in an HTML comment starting with `DRAFT NOTES`.
+4. **Open a PR.** CI comments a preview link where the draft is visible.
+5. **Run the AI-reader check.** Spawn a fresh subagent (a small model is
+   enough) whose only source is the preview Markdown,
+   `https://pr-<n>-hiimchinh-com.ch-nh.workers.dev/posts/<slug>.md`. It answers
+   each `readerQuestions` entry and grades it FULL (a quoted sentence answers
+   the whole question), PARTIAL or NONE. Fix the post and re-run with a new
+   subagent until every question is FULL.
+6. **Record the result** in `readerCheck` (`date`, `full`, `total`).
+7. **Publish** after the owner approves: remove `draft: true` and the
+   `DRAFT NOTES` comment, merge.
+
 ## Non-negotiables
 
 1. **Work shown here is Stringee and Cogover only.** Never name Chinh's own
