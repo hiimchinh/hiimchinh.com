@@ -1,0 +1,99 @@
+# Sveltia CMS at /admin/. Docs: https://sveltiacms.app/en/docs
+# Every saved draft becomes a branch cms/posts/<slug> with a pull request, so
+# CI posts the preview link used by the AI-reader check (AGENTS.md,
+# "Writing a post"). Publishing in the CMS merges that pull request.
+backend:
+  name: github
+  repo: hiimchinh/hiimchinh.com
+  branch: main
+  # Sign in with a fine-grained token (Contents + Pull requests: read and write).
+
+publish_mode: editorial_workflow
+media_folder: public/images/posts
+public_folder: /images/posts
+
+i18n:
+  structure: multiple_folders
+  locales: [en, vi]
+  default_locale: en
+  # A Vietnamese translation is optional; enable it from the editor's menu.
+  initial_locales: default
+
+collections:
+  - name: posts
+    label: Posts
+    label_singular: Post
+    folder: src/content/posts
+    create: true
+    extension: md
+    format: frontmatter
+    i18n: true
+    slug: "{{slug}}"
+    sortable_fields:
+      fields: [pubDatetime, title]
+      default: { field: pubDatetime, direction: descending }
+    fields:
+      - name: title
+        label: Title
+        widget: string
+        i18n: true
+        hint: 'Task-shaped: "How I …", "Why I …", "How to …".'
+      - name: description
+        label: Description
+        widget: text
+        i18n: true
+        hint: One paragraph that states the result.
+      - name: pubDatetime
+        label: Published
+        widget: datetime
+        format: YYYY-MM-DDTHH:mm:ssZ
+        i18n: duplicate
+      - name: draft
+        label: Draft
+        widget: boolean
+        default: true
+        i18n: duplicate
+        hint: Turn off only after the AI-reader check is full.
+      - name: featured
+        label: Featured
+        widget: boolean
+        default: false
+        required: false
+        i18n: duplicate
+      - name: tags
+        label: Tags
+        widget: list
+        default: []
+        i18n: duplicate
+      - name: audience
+        label: Reader
+        widget: string
+        required: false
+        i18n: true
+        hint: Who the post is for, in one line.
+      - name: readerQuestions
+        label: Reader questions
+        widget: list
+        required: false
+        i18n: true
+        hint: At least 3. Include "does this apply to me?" and "how do I check it worked?".
+      - name: readerCheck
+        label: AI-reader check
+        widget: object
+        required: false
+        i18n: true
+        hint: Filled in by the agent after the check.
+        fields:
+          - {
+              name: date,
+              label: Date,
+              widget: datetime,
+              time_format: false,
+              format: YYYY-MM-DD,
+            }
+          - { name: full, label: Full answers, widget: number, value_type: int }
+          - { name: total, label: Questions, widget: number, value_type: int }
+      - name: body
+        label: Body
+        widget: markdown
+        i18n: true
