@@ -1,0 +1,114 @@
+# Idea inbox at /admin/ideas/. The ideas live in a private repo; the ranking
+# rubric is in that repo's AGENTS.md. Sign in with the same fine-grained token
+# as /admin/ (it must include this repo).
+backend:
+  name: github
+  repo: hiimchinh/blog-ideas
+  branch: main
+
+media_folder: ideas/images
+
+collections:
+  - name: ideas
+    label: Ideas
+    label_singular: Idea
+    folder: ideas
+    create: true
+    extension: md
+    format: frontmatter
+    slug: "{{slug}}"
+    summary: "{{priority}} · {{title}} `{{status}}`"
+    sortable_fields:
+      fields: [priority, score, title]
+      default: { field: priority, direction: ascending }
+    view_filters:
+      filters:
+        - {
+            name: open,
+            label: Open,
+            field: status,
+            pattern: inbox|next|writing,
+          }
+        - { name: next, label: Next, field: status, pattern: next }
+        - {
+            name: published,
+            label: Published,
+            field: status,
+            pattern: published,
+          }
+        - {
+            name: client,
+            label: Client only,
+            field: status,
+            pattern: client-only,
+          }
+      default: open
+    view_groups:
+      groups:
+        - { name: series, label: Series, field: series }
+        - { name: status, label: Status, field: status }
+      default: series
+    fields:
+      - { name: title, label: Title, widget: string }
+      - name: status
+        label: Status
+        widget: select
+        default: inbox
+        options: [inbox, next, writing, published, client-only, dropped]
+      - name: series
+        label: Series
+        widget: select
+        required: false
+        options:
+          - { label: Agents in production, value: agents-in-production }
+          - { label: Fixed on my servers, value: fixed-on-my-servers }
+      - name: priority
+        label: Priority
+        widget: select
+        required: false
+        options: [P1, P2, P3]
+        hint: From score; Claude sets it with the rubric.
+      - {
+          name: score,
+          label: Score,
+          widget: number,
+          value_type: int,
+          required: false,
+        }
+      - {
+          name: reach,
+          label: Reach (1-5),
+          widget: number,
+          value_type: int,
+          required: false,
+        }
+      - {
+          name: proof,
+          label: Proof (1-5),
+          widget: number,
+          value_type: int,
+          required: false,
+        }
+      - {
+          name: fit,
+          label: Fit (1-5),
+          widget: number,
+          value_type: int,
+          required: false,
+        }
+      - name: effort
+        label: Effort
+        widget: select
+        required: false
+        options: [S, M, L]
+      - { name: demand, label: Demand evidence, widget: text, required: false }
+      - { name: sources, label: Sources, widget: list, required: false }
+      - { name: audience, label: Reader, widget: string, required: false }
+      - {
+          name: readerQuestions,
+          label: Reader questions,
+          widget: list,
+          required: false,
+        }
+      - { name: post, label: Post slug, widget: string, required: false }
+      - { name: body, label: Notes, widget: markdown, required: false }
