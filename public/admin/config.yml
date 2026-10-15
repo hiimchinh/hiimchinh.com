@@ -12,6 +12,13 @@ publish_mode: editorial_workflow
 media_folder: public/images/posts
 public_folder: /images/posts
 
+# Match the repo's checks: the content schema treats a missing optional field
+# as undefined (null or "" fail it), and prettier wants double quotes.
+output:
+  omit_empty_optional_fields: true
+  yaml:
+    quote: double
+
 i18n:
   structure: multiple_folders
   locales: [en, vi]
@@ -47,6 +54,7 @@ collections:
         label: Published
         widget: datetime
         format: YYYY-MM-DDTHH:mm:ssZ
+        default: "{{now}}"
         i18n: duplicate
       - name: draft
         label: Draft
