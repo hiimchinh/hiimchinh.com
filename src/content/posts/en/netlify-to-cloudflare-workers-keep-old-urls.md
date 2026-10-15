@@ -183,4 +183,12 @@ Run the same check for every line in your `_redirects` file, not only one.
 
 ## 8. Disconnect the Netlify site
 
-Moving DNS is not the end. My Netlify site was still connected to the GitHub repository, so every pull request kept getting failing Netlify checks: a deploy preview, header rules, redirect rules. Nothing reached Netlify any more, but the red checks stayed on every PR. Disconnect the repository in the Netlify site settings once the domain has moved.
+Moving DNS is not the end. My Netlify site was still connected to the GitHub repository, so every pull request kept getting failing Netlify checks: a deploy preview, header rules, redirect rules. Nothing reached Netlify any more, but the red checks stayed on every PR.
+
+Once the domain has moved:
+
+1. In Netlify, open the project and go to **Project configuration → Developer settings → Repository**.
+2. Select **Manage repository → Unlink repository**.
+3. In GitHub, open [Settings → Applications → Installed GitHub Apps](https://github.com/settings/installations), select **Configure** next to Netlify, and remove the repository. If no other repository uses Netlify, select **Uninstall** instead.
+
+Old commits keep their failed Netlify statuses. New pull requests no longer get Netlify checks.
