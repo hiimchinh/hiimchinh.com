@@ -6,14 +6,18 @@ import { postStandardViolations } from "@/utils/post-standards";
 
 export const BLOG_PATH = "src/content/posts";
 
+// The online editor (public/admin/config.yml) writes dates as quoted ISO
+// strings; hand-written posts use bare YAML timestamps. Accept both.
+const date = z.coerce.date();
+
 const posts = defineCollection({
   loader: glob({ pattern: "**/[^_]*.{md,mdx}", base: `./${BLOG_PATH}` }),
   schema: ({ image }) =>
     z
       .object({
         author: z.string().default(config.site.author),
-        pubDatetime: z.date(),
-        modDatetime: z.date().optional().nullable(),
+        pubDatetime: date,
+        modDatetime: date.optional().nullable(),
         title: z.string(),
         featured: z.boolean().optional(),
         draft: z.boolean().optional(),
@@ -29,7 +33,7 @@ const posts = defineCollection({
         readerQuestions: z.array(z.string()).optional(),
         /** Result of the AI-reader check (AGENTS.md, "Writing a post"). */
         readerCheck: z
-          .object({ date: z.date(), full: z.number(), total: z.number() })
+          .object({ date, full: z.number(), total: z.number() })
           .optional(),
       })
       .superRefine((post, ctx) => {
