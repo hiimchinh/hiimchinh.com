@@ -38,6 +38,11 @@ Every post since 14 October 2026 follows this flow. The build fails on a
 published post that skips it (`src/utils/post-standards.ts`, checked in the
 content schema and `tests/post-standards.test.ts`).
 
+Ideas come from the private inbox `hiimchinh/blog-ideas` (editor at
+`/admin/ideas/`). Its `AGENTS.md` holds the ranking rubric; pick the highest
+`priority` with `status: next`, and set the idea's `post` and `status` as the
+post moves.
+
 1. **Pick one reader.** Write `audience` in one line, e.g. "Developers with a
    static site on Netlify who want to move it to Cloudflare Workers".
 2. **List their questions.** At least 3 in `readerQuestions`, phrased as that
