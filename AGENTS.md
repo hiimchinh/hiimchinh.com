@@ -43,7 +43,10 @@ content schema and `tests/post-standards.test.ts`).
 2. **List their questions.** At least 3 in `readerQuestions`, phrased as that
    reader would ask an AI assistant. Include one "does this apply to me?" and
    one "how do I check it worked?".
-3. **Write the draft** (`pnpm new-post "Title"`, stays `draft: true`). Style:
+3. **Write the draft** in the online editor at `/admin/` (Sveltia CMS,
+   `public/admin/config.yml`; saving opens the PR of step 4 on branch
+   `cms/posts/<slug>`) or with `pnpm new-post "Title"`. It stays
+   `draft: true`. Style:
    task-shaped title ("How to …"), a description that states the result, a
    "Does this guide apply to you?" section (what does not carry over), numbered
    steps with real commands, and expected output for each check. Facts come
