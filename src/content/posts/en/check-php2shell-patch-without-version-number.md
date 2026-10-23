@@ -33,13 +33,13 @@ What you can check is the binary itself. The fix adds new error strings and new 
 
 It applies when you run PHP on **Linux** and you want to know if the PHP2Shell fix from php-src is in the binary that is serving requests. That covers distro packages, backport repositories, panel builds and your own builds.
 
-| Your setup                                                                                                             | What this guide does for you                                                                                                                                                                                                                                                                              |
-| ---------------------------------------------------------------------------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| PHP 8.2 to 8.5 from any source                                                                                         | The check finds the "full fix" marker.                                                                                                                                                                                                                                                                    |
-| PHP 7.4, 8.0 or 8.1 patched from the php-src backport branches (the distro and repository packages in the table below) | The check finds the "EOL backport" marker.                                                                                                                                                                                                                                                                |
-| PHP 7.3 or older, PHP 5.x (including Ubuntu Pro php7.2 and php7.0)                                                     | Partly. Upstream has no fix for these, so each vendor writes its own patch. The marker check was not tested on these builds and can report `NONE` on a patched build. Use the changelog check at the end of step 2, then plan an upgrade. Steps 4 to 6 (running processes, reload, Docker) apply in full. |
-| PHP on Windows                                                                                                         | Not covered. The commands here were not tested on Windows.                                                                                                                                                                                                                                                |
-| A shared host where you have no shell                                                                                  | Not covered. Ask the host for the package version and compare it with the table below.                                                                                                                                                                                                                    |
+| Your setup                                                         | What this guide does for you                                                                                                                                                                                                                                                                              |
+| ------------------------------------------------------------------ | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| PHP 8.2 to 8.5 from any source                                     | The check finds the "full fix" marker.                                                                                                                                                                                                                                                                    |
+| PHP 7.4, 8.0 or 8.1 with a fixed package from the table below      | The check finds the "EOL backport" marker on the Ubuntu and ondrej/sury packages, which were tested. The other vendors' builds were not tested; if one reports `NONE`, use the changelog check at the end of step 2.                                                                                      |
+| PHP 7.3 or older, PHP 5.x (including Ubuntu Pro php7.2 and php7.0) | Partly. Upstream has no fix for these, so each vendor writes its own patch. The marker check was not tested on these builds and can report `NONE` on a patched build. Use the changelog check at the end of step 2, then plan an upgrade. Steps 4 to 6 (running processes, reload, Docker) apply in full. |
+| PHP on Windows                                                     | Not covered. The commands here were not tested on Windows.                                                                                                                                                                                                                                                |
+| A shared host where you have no shell                              | Not covered. Ask the host for the package version and compare it with the table below.                                                                                                                                                                                                                    |
 
 A marker proves that the fix code is in the binary. It does **not** prove the server is no longer exploitable. See [What a marker does not prove](#what-a-marker-does-not-prove).
 
@@ -151,6 +151,8 @@ echo "not reached\n";
 php -n -d memory_limit=10M -d display_errors=stderr oom-probe.php; echo "exit=$?"
 ```
 
+With the probe exactly as written above:
+
 | Build        | Expected output                                                                                            |
 | ------------ | ---------------------------------------------------------------------------------------------------------- |
 | Not fixed    | `Fatal error: Allowed memory size of 10485760 bytes exhausted …`, then `shutdown function ran`, `exit=255` |
@@ -214,7 +216,7 @@ PID 1033 comm=apache2 ns=host
 
 What the results mean:
 
-- `markers=NONE` with no `(deleted)`: the file on disk is not fixed. Upgrade the package.
+- `markers=NONE` with no `(deleted)`: the file on disk has no official fix code. On 7.4 and newer, upgrade the package. On 7.3 and older, or with a vendor's own patch, use the changelog check from step 2 before you decide.
 - `exe: … (deleted)` or `lib: … (deleted)`: the process still runs the code from before the upgrade. Reload or restart it (step 5). The marker shown is for the **old** code.
 - `ns=other-mnt-ns(container?)`: the process runs in a container. See step 6.
 
@@ -238,14 +240,14 @@ Then run `check-php-procs.sh` again. Expected result: no `(deleted)`, and every 
 
 The official `php:7.4`, `php:8.0` and `php:8.1` images were not rebuilt for PHP2Shell. A container based on them stays unfixed until you change the base.
 
-1. Check the image without running your app. Find the PHP binaries in the image:
+1. Check the image without running your app. Find the PHP binaries in the image (this needs `sh` in the image; the official images have it):
 
    ```sh
    docker run --rm --entrypoint sh IMAGE -c \
      'find / \( -name php-fpm -o -name "libphp*.so" -o -name php \) -type f 2>/dev/null'
    ```
 
-   Copy the one your container serves with out of the image, then run the step 2 check on the copy. In the official `-fpm` images it is `/usr/local/sbin/php-fpm`:
+   Copy the one your container serves with out of the image, then run the step 2 check on the copy. In the official `-fpm` images it is `/usr/local/sbin/php-fpm`. In the `-apache` images, use the `libphp*.so` path that `find` printed:
 
    ```sh
    id=$(docker create IMAGE)
@@ -258,15 +260,24 @@ The official `php:7.4`, `php:8.0` and `php:8.1` images were not rebuilt for PHP2
 
 2. Fix the image. The official images build PHP from source into `/usr/local`, so no package upgrade can patch them. Choose one:
    - Change `FROM php:7.4-fpm` to `FROM php:8.2-fpm` or newer, if your application runs on 8.2.
-   - Build on a distro image and install PHP from a patched package in the table above. For example, on Ubuntu 24.04 the `php8.3-fpm` package is fixed from `8.3.6-0ubuntu0.24.04.13`:
+   - Build on a distro image and install PHP from a fixed package in the table above. To stay on 7.4, this Dockerfile uses the ondrej/sury packages with the setup steps from [packages.sury.org](https://packages.sury.org/php/README.txt):
 
      ```dockerfile
-     FROM ubuntu:24.04
-     RUN apt-get update && apt-get install -y --no-install-recommends php8.3-fpm \
-      && rm -rf /var/lib/apt/lists/*
+     FROM debian:12-slim
+     RUN apt-get update \
+      && apt-get install -y --no-install-recommends lsb-release ca-certificates curl \
+      && curl -sSLo /tmp/debsuryorg-archive-keyring.deb https://packages.sury.org/debsuryorg-archive-keyring.deb \
+      && dpkg -i /tmp/debsuryorg-archive-keyring.deb \
+      && echo "deb [signed-by=/usr/share/keyrings/debsuryorg-archive-keyring.gpg] https://packages.sury.org/php/ $(lsb_release -sc) main" > /etc/apt/sources.list.d/php.list \
+      && apt-get update \
+      && apt-get install -y --no-install-recommends php7.4-fpm \
+      && sed -i 's|^listen = .*|listen = 9000|' /etc/php/7.4/fpm/pool.d/www.conf \
+      && mkdir -p /run/php \
+      && rm -rf /var/lib/apt/lists/* /tmp/*.deb
+     CMD ["php-fpm7.4", "-F"]
      ```
 
-     To stay on 7.4, use the ondrej/sury or Remi packages from the table. Their setup steps are on [packages.sury.org](https://packages.sury.org/php/README.txt) and [rpms.remirepo.net](https://rpms.remirepo.net/).
+     Built on 23 October 2026, it installed `php7.4-fpm 1:7.4.33-31+0~20261021.121+debian12~1`, the step 2 check on `/usr/sbin/php-fpm7.4` reported `eol-backport`, and `php-fpm7.4` ran as the container's main process. Add the PHP extensions your application needs (`php7.4-mysql`, `php7.4-gd`, …) to the `apt-get install` line. The official image keeps its configuration in `/usr/local/etc`, this one in `/etc/php/7.4`, so move your settings across.
 
    - Rebuild the image.
 3. Recreate the container from the new image. An `apt upgrade` run through `docker exec` changes only that container's writable layer. It is gone the next time the container is created from the old image.
