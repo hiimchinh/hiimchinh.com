@@ -28,7 +28,7 @@ readerCheck:
 
 On 21 October 2026 PHP disclosed two critical remote code execution flaws, together called PHP2Shell: [CVE-2026-109618](https://github.com/php/php-src/security/advisories/GHSA-w8hw-w9fx-j79w) and [CVE-2026-109619](https://github.com/php/php-src/security/advisories/GHSA-6wmf-4rv5-p3rp). Fixed releases exist only for 8.2 to 8.5: 8.2.35, 8.3.36, 8.4.27 and 8.5.12.
 
-If you run anything older, your fix is a backport. Ubuntu, Red Hat, Freexian (paid Debian 11 support), ondrej (sury), Remi, cPanel and Plesk patch PHP 7.4, 8.0 or 8.1 **without changing the version number**. A patched Ubuntu 24.04 still says 8.3.6. A patched sury build still says 7.4.33. So `php -v`, the `X-Powered-By` header and most scanners cannot tell you whether you are safe.
+If you run anything older, your fix is a backport. Ubuntu, Red Hat, Freexian (paid Debian 11 support), ondrej (sury), Remi, cPanel and Plesk patch PHP 7.4, 8.0 or 8.1 **without changing the upstream version number**. A patched sury build still says 7.4.33. A patched Ubuntu 22.04 says `8.1.2-1ubuntu2.28`: the package revision changes, but the PHP version is still 8.1.2. So a scanner or an `X-Powered-By` check that reads the PHP version sees the same number before and after, and `php -v` at best tells you the package revision, not whether the binary that serves requests has the fix.
 
 What you can check is the binary itself. The fix adds new error strings and new exported functions to PHP. They are in the file even when it is stripped. I checked the commands below on 23 October 2026 against real packages before and after the fix. The [worked example](#worked-example-one-server-before-and-after-the-fix) near the end shows every check on one server, with the real output, before and after the upgrade.
 
@@ -145,14 +145,16 @@ zcat /usr/share/doc/php7.2-fpm/changelog.Debian.gz | grep -E 'CVE-2026-10961(8|9
 rpm -q --changelog php-fpm | grep -E 'CVE-2026-10961(8|9)'  # RHEL family (not tested)
 ```
 
-Replace `php7.2-fpm` with the package that owns your binary. This works for any PHP version, including 5.6 and panel builds installed as packages:
+Expected output: at least one line naming `CVE-2026-109618` or `CVE-2026-109619`. No output means the vendor did not record the fix in that package.
+
+Replace `php7.2-fpm` with the package that owns your binary. To find that package for any PHP version, including 5.6 and panel builds installed as packages:
 
 ```sh
 dpkg -S "$(readlink -f "$FILE")"   # Debian, Ubuntu: prints the package name
 rpm -qf "$FILE"                    # RHEL family, CloudLinux
 ```
 
-Expected output: at least one line naming `CVE-2026-109618` or `CVE-2026-109619`. No output means the vendor did not record the fix in that package.
+Expected output: the package name, for example `php8.1-fpm: /usr/sbin/php-fpm8.1`.
 
 ## 3. Optional: confirm the behaviour with a safe local probe
 
@@ -245,7 +247,7 @@ What the results mean:
 
 ## 5. Reload PHP-FPM, restart Apache
 
-**PHP-FPM:** a reload is enough. On `SIGUSR2` the FPM master runs `execvp()` on its own path, so it loads the new binary ([php-fpm(8)](https://github.com/php/php-src/blob/PHP-8.4/sapi/fpm/php-fpm.8.in): "graceful reload of all workers + reload of fpm conf/binary"). The upstream systemd unit uses exactly that for `reload`. When FPM runs in the foreground, as under systemd (`--nodaemonize`) and in Docker, the master keeps its PID. In a test with the official `php:8.4.26-fpm-alpine` image, where the `php-fpm` binary was replaced by the 8.4.27 one while it ran, the master kept its PID, lost the `(deleted)` mark and showed the full-fix marker. The new workers showed it too.
+**PHP-FPM:** a reload is enough. On `SIGUSR2` the FPM master runs `execvp()` on its own path, so it loads the new binary ([php-fpm(8)](https://github.com/php/php-src/blob/PHP-8.4/sapi/fpm/php-fpm.8.in): "graceful reload of all workers + reload of fpm conf/binary"). The upstream systemd unit uses exactly that for `reload`. When FPM runs in the foreground, as under systemd (`--nodaemonize`) and in Docker, the master keeps its PID. In a test with the official `php:8.4.26-fpm-alpine` image, the `php-fpm` binary was replaced by the 8.4.27 one while FPM ran, then the master got `SIGUSR2`. After the signal the master kept its PID, lost the `(deleted)` mark and showed the full-fix marker. The new workers showed it too.
 
 ```sh
 systemctl reload php7.4-fpm   # the unit is named after your version, for example php8.3-fpm
@@ -302,7 +304,9 @@ The official `php:7.4`, `php:8.0` and `php:8.1` images were not rebuilt for PHP2
      CMD ["php-fpm7.4", "-F"]
      ```
 
-     Built on 23 October 2026, it installed `php7.4-fpm 1:7.4.33-31+0~20261021.121+debian12~1`, the step 2 check on `/usr/sbin/php-fpm7.4` reported `eol-backport`, and `php-fpm7.4` ran as the container's main process. Add the PHP extensions your application needs (`php7.4-mysql`, `php7.4-gd`, …) to the `apt-get install` line. The official image keeps its configuration in `/usr/local/etc`, this one in `/etc/php/7.4`, so move your settings across.
+     For an `-apache` image, install `apache2` and `libapache2-mod-php7.4` instead of `php7.4-fpm`, drop the `sed` and `mkdir` lines, and use `CMD ["apache2ctl", "-D", "FOREGROUND"]`. For a CLI-only image, install `php7.4-cli`. These two variants were not built in the test.
+
+     The `-fpm` Dockerfile above was built on 23 October 2026: it installed `php7.4-fpm 1:7.4.33-31+0~20261021.121+debian12~1`, the step 2 check on `/usr/sbin/php-fpm7.4` reported `eol-backport`, and `php-fpm7.4` ran as the container's main process. Add the PHP extensions your application needs (`php7.4-mysql`, `php7.4-gd`, …) to the `apt-get install` line. The official image keeps its configuration in `/usr/local/etc`, this one in `/etc/php/7.4`, so move your settings across.
 
    Then rebuild the image.
 
@@ -382,7 +386,7 @@ PID 6493 comm=php-fpm8.1 ns=host
   exe: /usr/sbin/php-fpm8.1 (deleted)  markers=NONE
 ```
 
-This is the state that `php -v`, `dpkg` and a version scanner all report as fixed.
+In this state the package, `dpkg` and `php -v` all show the fixed revision, yet every process that serves requests runs the old code.
 
 ### After the reload
 
