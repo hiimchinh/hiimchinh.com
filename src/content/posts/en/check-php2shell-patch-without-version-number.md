@@ -22,7 +22,7 @@ readerQuestions:
 
 On 21 October 2026 PHP disclosed two critical remote code execution flaws, together called PHP2Shell: [CVE-2026-109618](https://github.com/php/php-src/security/advisories/GHSA-w8hw-w9fx-j79w) and [CVE-2026-109619](https://github.com/php/php-src/security/advisories/GHSA-6wmf-4rv5-p3rp). Fixed releases exist only for 8.2 to 8.5: 8.2.35, 8.3.36, 8.4.27 and 8.5.12.
 
-If you run anything older, your fix is a backport. Ubuntu, Debian, ondrej (sury), Remi, cPanel and Plesk all patch PHP 7.4, 8.0 and 8.1 **without changing the version number**. A patched Ubuntu 24.04 still says 8.3.6. A patched sury build still says 7.4.33. So `php -v`, the `X-Powered-By` header and most scanners cannot tell you whether you are safe.
+If you run anything older, your fix is a backport. Ubuntu, Red Hat, Freexian (paid Debian 11 support), ondrej (sury), Remi, cPanel and Plesk patch PHP 7.4, 8.0 or 8.1 **without changing the version number**. A patched Ubuntu 24.04 still says 8.3.6. A patched sury build still says 7.4.33. So `php -v`, the `X-Powered-By` header and most scanners cannot tell you whether you are safe.
 
 What you can check is the binary itself. The fix adds new error strings and new exported functions to PHP. They are in the file even when it is stripped. I checked the commands below on 23 October 2026 against real packages before and after the fix.
 
@@ -32,13 +32,13 @@ What you can check is the binary itself. The fix adds new error strings and new 
 
 It applies when you run PHP on **Linux** and you want to know if the PHP2Shell fix from php-src is in the binary that is serving requests. That covers distro packages, backport repositories, panel builds and your own builds.
 
-| Your setup                                                                                                             | What this guide does for you                                                                                                                                                                            |
-| ---------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| PHP 8.2 to 8.5 from any source                                                                                         | The check finds the "full fix" marker.                                                                                                                                                                  |
-| PHP 7.4, 8.0 or 8.1 patched from the php-src backport branches (the distro and repository packages in the table below) | The check finds the "EOL backport" marker.                                                                                                                                                              |
-| PHP 7.3 or older, PHP 5.x                                                                                              | Upstream has no fix for these. Community and vendor patches may use different code, so the marker check can report `NONE` on a patched build. Use your vendor's own verification, then plan an upgrade. |
-| PHP on Windows                                                                                                         | Not covered. The commands here were not tested on Windows.                                                                                                                                              |
-| A shared host where you have no shell                                                                                  | Not covered. Ask the host for the package version and compare it with the table below.                                                                                                                  |
+| Your setup                                                                                                             | What this guide does for you                                                                                                                                                                                                                                                                              |
+| ---------------------------------------------------------------------------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| PHP 8.2 to 8.5 from any source                                                                                         | The check finds the "full fix" marker.                                                                                                                                                                                                                                                                    |
+| PHP 7.4, 8.0 or 8.1 patched from the php-src backport branches (the distro and repository packages in the table below) | The check finds the "EOL backport" marker.                                                                                                                                                                                                                                                                |
+| PHP 7.3 or older, PHP 5.x (including Ubuntu Pro php7.2 and php7.0)                                                     | Partly. Upstream has no fix for these, so each vendor writes its own patch. The marker check was not tested on these builds and can report `NONE` on a patched build. Use the changelog check at the end of step 2, then plan an upgrade. Steps 4 to 6 (running processes, reload, Docker) apply in full. |
+| PHP on Windows                                                                                                         | Not covered. The commands here were not tested on Windows.                                                                                                                                                                                                                                                |
+| A shared host where you have no shell                                                                                  | Not covered. Ask the host for the package version and compare it with the table below.                                                                                                                                                                                                                    |
 
 A marker proves that the fix code is in the binary. It does **not** prove the server is no longer exploitable. See [What a marker does not prove](#what-a-marker-does-not-prove).
 
@@ -60,7 +60,7 @@ Use this table to find the version you should have. Only the vendors' own pages 
 | Plesk (Linux)                                          | Backports for 7.4.33, 8.0.30, 8.1.34; version string unchanged ([change log](https://docs.plesk.com/release-notes/obsidian/change-log/))                                                                                                                                                         | With licence                   |
 | Official Docker images `php:7.4`, `php:8.0`, `php:8.1` | **Not rebuilt.** The [docker-library/php](https://github.com/docker-library/php) repository only builds 8.2 and newer                                                                                                                                                                            | —                              |
 
-Paid long-term support vendors (TuxCare, Zend, HeroDevs, Freexian PHP LTS) say they ship fixes for older branches. They did not publish exact package versions, so check with the marker below.
+Paid long-term support vendors (TuxCare, Zend, HeroDevs, Freexian PHP LTS) say they ship fixes for older branches. They did not publish exact package versions. Run the marker check below; if it reports `NONE`, ask the vendor which fix their build contains.
 
 ## 1. Find the PHP binary that actually serves requests
 
@@ -87,7 +87,7 @@ The fix adds strings and exported functions that do not exist in any PHP source 
 `grep -a` reads the binary as text. It needs no extra tools, so it also works inside slim Docker images:
 
 ```sh
-FILE=/usr/sbin/php-fpm8.3   # the binary from step 1
+FILE=/usr/sbin/php-fpm7.4   # the binary from step 1, for example php-fpm8.3 or libphp7.4.so
 
 if grep -aqF 'memory_hard_limit_percent' "$FILE" &&
    grep -aqF 'Hard memory limit of %zu bytes exhausted' "$FILE"; then
@@ -119,7 +119,14 @@ nm -D --defined-only "$FILE" | grep -E ' (zend_set_memory_hard_limit_percent|zen
 
 Expected output on a fixed build: one line ending in one of the two names. On the official Docker image, plain `nm` says `no symbols` and `nm -D` still finds them.
 
-`NONE` on a 7.3 or 5.x build, or on a build with a vendor's own patch, does not mean unpatched. Those patches can use different code. Check against your vendor's patch.
+`NONE` on a 7.3 or 5.x build, or on a build with a vendor's own patch, does not mean unpatched. Those patches can use different code. For those builds, check that the package changelog names the CVEs. That is the vendor's statement, not proof from the binary:
+
+```sh
+apt changelog php7.2-fpm | grep -E 'CVE-2026-10961(8|9)'    # Debian, Ubuntu
+rpm -q --changelog php-fpm | grep -E 'CVE-2026-10961(8|9)'  # RHEL family (not tested)
+```
+
+Expected output: at least one line naming `CVE-2026-109618` or `CVE-2026-109619`. No output means the vendor did not record the fix in that package.
 
 ## 3. Optional: confirm the behaviour with a safe local probe
 
@@ -145,6 +152,8 @@ php -n -d memory_limit=10M -d display_errors=stderr oom-probe.php; echo "exit=$?
 | Not fixed    | `Fatal error: Allowed memory size of 10485760 bytes exhausted …`, then `shutdown function ran`, `exit=255` |
 | Full fix     | `Hard memory limit of 20971520 bytes exhausted …`, no shutdown line, `exit=137`                            |
 | EOL backport | `Fatal error: Allowed memory size …` on stderr, no shutdown line, `exit=1`                                 |
+
+The exit codes come from the code paths. 255 is PHP's normal exit after a fatal error, and the shutdown function still runs. The full fix stops the process at once with `_exit(137)` when memory passes the hard limit (twice `memory_limit` here). The EOL backport stops it at once with `_exit(1)`. In both fixed cases no PHP code runs after the out-of-memory error.
 
 Keep the string interpolation on the `$b` line. With one big `str_repeat()` the fixed 8.4.27 build still answers `exit=255`, because that call takes a path that fails softly.
 
@@ -199,7 +208,7 @@ What the results mean:
 **PHP-FPM:** a reload is enough. On `SIGUSR2` the FPM master runs `execvp()` on its own path, so it loads the new binary ([php-fpm(8)](https://github.com/php/php-src/blob/PHP-8.4/sapi/fpm/php-fpm.8.in): "graceful reload of all workers + reload of fpm conf/binary"). The upstream systemd unit uses exactly that for `reload`. In the test, the master kept its PID, lost the `(deleted)` mark and showed the full-fix marker. The new workers showed it too.
 
 ```sh
-systemctl reload php8.3-fpm
+systemctl reload php7.4-fpm   # the unit is named after your version, for example php8.3-fpm
 ```
 
 **Apache with mod_php:** restart it. It is not verified that a graceful reload loads the new `libphp`.
@@ -214,14 +223,16 @@ Then run `check-php-procs.sh` again. Expected result: no `(deleted)`, and every 
 
 The official `php:7.4`, `php:8.0` and `php:8.1` images were not rebuilt for PHP2Shell. A container based on them stays unfixed until you change the base.
 
-1. Check an image without running your app:
+1. Check the image without running your app. Copy the binary your container serves with out of the image, then run the step 2 check on the copy. In the official `-fpm` images it is `/usr/local/sbin/php-fpm`:
 
    ```sh
-   docker run --rm --entrypoint sh IMAGE -c \
-     'grep -aqF memory_hard_limit_percent "$(command -v php)" && echo full-fix || echo check-further'
+   id=$(docker create IMAGE)
+   docker cp "$id":/usr/local/sbin/php-fpm /tmp/php-fpm-check
+   docker rm "$id"
+   FILE=/tmp/php-fpm-check   # then run the step 2 check
    ```
 
-   For 7.4, 8.0 and 8.1 images, copy the binary out with `docker cp` and run the step 2 check, because the EOL backport has a different marker.
+   Expected result for an image based on the official `php:7.4-fpm`: `NONE`.
 
 2. Fix the image: move the base to `php:8.2` or newer, or install PHP from a patched repository from the table above. Rebuild the image.
 3. Recreate the container from the new image. An `apt upgrade` run through `docker exec` changes only that container's writable layer. It is gone the next time the container is created from the old image.
@@ -233,6 +244,6 @@ A marker shows that the code from the official fix commit is in the binary. It d
 
 - The EOL backport is a "minimal mitigation", not the full fix of 8.2 and newer. It also turns off session upload progress, even though `ini_get('session.upload_progress.enabled')` still returns `1`.
 - Community backports for 7.3 and older can miss paths. For example, an issue on [vperetti/php-cve-2026-109618-109619-backports](https://github.com/vperetti/php-cve-2026-109618-109619-backports/issues/2) lists fatal error paths that the official 7.4 patch converts but the 7.x and 5.x ports do not.
-- The [CVE-2026-109619 advisory](https://github.com/php/php-src/security/advisories/GHSA-6wmf-4rv5-p3rp) says: "It might be prudent to set `session.upload_progress.enabled=0` if you don't need this feature even after applying the patch". If you do not use upload progress, set it to `0` and reload.
+- The [CVE-2026-109619 advisory](https://github.com/php/php-src/security/advisories/GHSA-6wmf-4rv5-p3rp) says: "It might be prudent to set `session.upload_progress.enabled=0` if you don't need this feature even after applying the patch". This applies to every build, including the full fix. If you do not use upload progress, set it to `0` in `php.ini` and reload.
 
 The way out of all three is the same: move to PHP 8.2 or newer, where the full fix is released.
