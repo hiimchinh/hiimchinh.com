@@ -17,6 +17,7 @@ readerQuestions:
 <!-- DRAFT NOTES
 - Sources accessed 23 October 2026. The checks were run on 23 October 2026 against real packages: official Docker php:8.4.26 and php:8.4.27, Ubuntu noble php8.3 8.3.6-0ubuntu0.24.04.13, Ubuntu jammy php8.1 8.1.2-1ubuntu2 and 8.1.2-1ubuntu2.28, sury php7.4 7.4.33-31+0~20261021.121. Not tested: Apache mod_php reload, LiteSpeed, FrankenPHP static builds, Windows, RPM changelogs.
 - Research reports (workspace): plans/reports/research-261023-1643-php2shell-verify-method-and-scale.md and research-261023-1643-php2shell-vendor-patch-status.md.
+- The Apache sample output in step 4 is illustrative: the lib: path handling was tested with a simulated mapping, not a real Apache + libphp.
 - Owner: confirm the first-person wording in the intro ("I checked") is fine, or change it to neutral.
 -->
 
@@ -46,19 +47,21 @@ A marker proves that the fix code is in the binary. It does **not** prove the se
 
 Use this table to find the version you should have. Only the vendors' own pages were used, accessed 23 October 2026.
 
-| Platform                                               | Fixed package                                                                                                                                                                                                                                                                                    | Cost                           |
-| ------------------------------------------------------ | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ | ------------------------------ |
-| Debian 12 / 13                                         | php8.2 `8.2.35-1~deb12u1` ([DLA-4848-1](https://www.debian.org/lts/security/2026/dla-4848)), php8.4 `8.4.27-1~deb13u1` ([DSA-6574-1](https://www.debian.org/security/2026/dsa-6574))                                                                                                             | Free                           |
-| Debian 11, php7.4                                      | **No free fix** yet: `7.4.33-1+deb11u12` is still vulnerable ([tracker](https://security-tracker.debian.org/tracker/CVE-2026-109618)). Freexian ELTS has `7.4.33-1+deb11u14` ([tracker](https://deb.freexian.com/extended-lts/tracker/CVE-2026-109618))                                          | Paid                           |
-| Ubuntu 22.04 / 24.04                                   | php8.1 `8.1.2-1ubuntu2.28`, php8.3 `8.3.6-0ubuntu0.24.04.13` ([USN-8948-1](https://ubuntu.com/security/notices/USN-8948-1))                                                                                                                                                                      | Free                           |
-| Ubuntu 20.04 / 18.04 / 16.04                           | php7.4 `7.4.3-4ubuntu2.29+esm5`, php7.2 `7.2.24-0ubuntu0.18.04.17+esm14`, php7.0 `7.0.33-0ubuntu0.16.04.16+esm22` ([USN-8948-2](https://ubuntu.com/security/notices/USN-8948-2))                                                                                                                 | Ubuntu Pro                     |
-| ondrej PPA / packages.sury.org                         | `1:7.4.33-31`, `1:8.0.30-25`, `8.1.34-9` ([changelog](https://launchpad.net/~ondrej/+archive/ubuntu/php/+sourcepub/18891785/+files/changelog))                                                                                                                                                   | Free                           |
-| Remi (EL9)                                             | php74 `7.4.33-31`, php80 `8.0.30-21`, php81 `8.1.34-6` ([repo](https://rpms.remirepo.net/enterprise/9/php74/x86_64/))                                                                                                                                                                            | Free                           |
-| RHEL 8 php:7.4                                         | `php-7.4.33-8.module+el8.10.0+25117+30337cca` ([RHSA-2026:87080](https://access.redhat.com/errata/RHSA-2026:87080)). Same fix in AlmaLinux ([ALSA-2026:87080](https://errata.almalinux.org/8/ALSA-2026-87080.html)) and Rocky ([RLSA-2026:87080](https://errata.rockylinux.org/RLSA-2026:87080)) | RHEL paid, Alma and Rocky free |
-| RHEL 8 php:7.2, 7.3, 8.0 streams                       | No advisory found                                                                                                                                                                                                                                                                                | —                              |
-| cPanel EasyApache 4                                    | ea-php74, ea-php80, ea-php81 backports in 25.91 ([change log](https://docs.cpanel.net/changelogs/easyapache-4-change-log-25/))                                                                                                                                                                   | With licence                   |
-| Plesk (Linux)                                          | Backports for 7.4.33, 8.0.30, 8.1.34; version string unchanged ([change log](https://docs.plesk.com/release-notes/obsidian/change-log/))                                                                                                                                                         | With licence                   |
-| Official Docker images `php:7.4`, `php:8.0`, `php:8.1` | **Not rebuilt.** The [docker-library/php](https://github.com/docker-library/php) repository only builds 8.2 and newer                                                                                                                                                                            | —                              |
+| Platform                                               | Fixed package                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                    | Cost                           |
+| ------------------------------------------------------ | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ------------------------------ |
+| Debian 12 / 13                                         | php8.2 `8.2.35-1~deb12u1` ([DLA-4848-1](https://www.debian.org/lts/security/2026/dla-4848)), php8.4 `8.4.27-1~deb13u1` ([DSA-6574-1](https://www.debian.org/security/2026/dsa-6574))                                                                                                                                                                                                                                                                                                                                             | Free                           |
+| Debian 11, php7.4                                      | **No free fix** yet: `7.4.33-1+deb11u12` is still vulnerable ([tracker](https://security-tracker.debian.org/tracker/CVE-2026-109618)). Freexian ELTS has `7.4.33-1+deb11u14` ([tracker](https://deb.freexian.com/extended-lts/tracker/CVE-2026-109618))                                                                                                                                                                                                                                                                          | Paid                           |
+| Ubuntu 22.04                                           | php8.1 `8.1.2-1ubuntu2.28` ([USN-8948-1](https://ubuntu.com/security/notices/USN-8948-1))                                                                                                                                                                                                                                                                                                                                                                                                                                        | Free                           |
+| Ubuntu 24.04                                           | php8.3 `8.3.6-0ubuntu0.24.04.13` ([USN-8948-1](https://ubuntu.com/security/notices/USN-8948-1))                                                                                                                                                                                                                                                                                                                                                                                                                                  | Free                           |
+| Ubuntu 20.04 / 18.04 / 16.04                           | php7.4 `7.4.3-4ubuntu2.29+esm5`, php7.2 `7.2.24-0ubuntu0.18.04.17+esm14`, php7.0 `7.0.33-0ubuntu0.16.04.16+esm22` ([USN-8948-2](https://ubuntu.com/security/notices/USN-8948-2))                                                                                                                                                                                                                                                                                                                                                 | Ubuntu Pro                     |
+| ondrej PPA / packages.sury.org                         | `1:7.4.33-31`, `1:8.0.30-25`, `8.1.34-9` ([changelog](https://launchpad.net/~ondrej/+archive/ubuntu/php/+sourcepub/18891785/+files/changelog))                                                                                                                                                                                                                                                                                                                                                                                   | Free                           |
+| Remi (EL9)                                             | php74 `7.4.33-31`, php80 `8.0.30-21`, php81 `8.1.34-6` ([repo](https://rpms.remirepo.net/enterprise/9/php74/x86_64/))                                                                                                                                                                                                                                                                                                                                                                                                            | Free                           |
+| RHEL 8 php:7.4                                         | `php-7.4.33-8.module+el8.10.0+25117+30337cca` ([RHSA-2026:87080](https://access.redhat.com/errata/RHSA-2026:87080)). Same fix in AlmaLinux ([ALSA-2026:87080](https://errata.almalinux.org/8/ALSA-2026-87080.html)) and Rocky ([RLSA-2026:87080](https://errata.rockylinux.org/RLSA-2026:87080))                                                                                                                                                                                                                                 | RHEL paid, Alma and Rocky free |
+| RHEL 8 php:7.2, 7.3, 8.0 streams                       | No advisory found                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                | —                              |
+| cPanel EasyApache 4                                    | ea-php74, ea-php80, ea-php81 backports in 25.91 ([change log](https://docs.cpanel.net/changelogs/easyapache-4-change-log-25/))                                                                                                                                                                                                                                                                                                                                                                                                   | With licence                   |
+| Plesk (Linux)                                          | Backports for 7.4.33, 8.0.30, 8.1.34; version string unchanged ([change log](https://docs.plesk.com/release-notes/obsidian/change-log/))                                                                                                                                                                                                                                                                                                                                                                                         | With licence                   |
+| PHP 7.3 and older, 5.x                                 | Ubuntu Pro (php7.2, php7.0, php5 on 14.04, [USN-8948-2](https://ubuntu.com/security/notices/USN-8948-2)); CloudLinux alt-php 5.2 to 5.6 and 7.0 to 7.4 ([announcement](https://blog.cloudlinux.com/php-cve-2026-109618-and-cve-2026-109619)); TuxCare ELS ([FAQ](https://tuxcare.com/els-php2shell-patches-faq/)); DirectAdmin CustomBuild patches for 5.6 and 7.0 to 7.4, applied on rebuild ([forum, staff posts](https://forum.directadmin.com/threads/critical-php-updates.82726/page-9)). Each uses its own port of the fix | Mostly paid                    |
+| Official Docker images `php:7.4`, `php:8.0`, `php:8.1` | **Not rebuilt.** The [docker-library/php](https://github.com/docker-library/php) repository only builds 8.2 and newer                                                                                                                                                                                                                                                                                                                                                                                                            | —                              |
 
 Paid long-term support vendors (TuxCare, Zend, HeroDevs, Freexian PHP LTS) say they ship fixes for older branches. They did not publish exact package versions. Run the marker check below; if it reports `NONE`, ask the vendor which fix their build contains.
 
@@ -100,7 +103,7 @@ else
 fi
 ```
 
-Expected output: `full-fix`, `eol-backport` or `NONE`. These are the results on real packages:
+Expected output: `full-fix`, `eol-backport` or `NONE`. None of these strings exists in the PHP 7.4, 8.0, 8.1, 8.2.34 or 8.4.26 source before the fix, so an unfixed build gives `NONE`. These are the results on real packages:
 
 | Package                                                   | `php -v` shows    | Result         |
 | --------------------------------------------------------- | ----------------- | -------------- |
@@ -122,7 +125,8 @@ Expected output on a fixed build: one line ending in one of the two names. On th
 `NONE` on a 7.3 or 5.x build, or on a build with a vendor's own patch, does not mean unpatched. Those patches can use different code. For those builds, check that the package changelog names the CVEs. That is the vendor's statement, not proof from the binary:
 
 ```sh
-apt changelog php7.2-fpm | grep -E 'CVE-2026-10961(8|9)'    # Debian, Ubuntu
+apt changelog php7.2-fpm | grep -E 'CVE-2026-10961(8|9)'    # Debian, Ubuntu (downloads the changelog)
+zcat /usr/share/doc/php7.2-fpm/changelog.Debian.gz | grep -E 'CVE-2026-10961(8|9)'  # same, offline
 rpm -q --changelog php-fpm | grep -E 'CVE-2026-10961(8|9)'  # RHEL family (not tested)
 ```
 
@@ -182,7 +186,10 @@ for d in /proc/[0-9]*; do
   exe=$(readlink "$d/exe" 2>/dev/null) || exe="?"
   ns="host"; [ "$(readlink "$d/ns/mnt" 2>/dev/null)" != "$(readlink /proc/self/ns/mnt)" ] && ns="other-mnt-ns(container?)"
   echo "PID $pid comm=$comm ns=$ns"
-  echo "  exe: $exe  markers=$(markers "$d/exe")"
+  case "$comm" in
+    httpd*|apache2*|litespeed*) echo "  exe: $exe  (web server; PHP is in the lib lines below)" ;;
+    *) echo "  exe: $exe  markers=$(markers "$d/exe")" ;;
+  esac
   awk '$6 ~ /libphp|mod_php|php[0-9.]*\.so/ && $2 ~ /x/ {print $1, $6, $7}' "$d/maps" 2>/dev/null | sort -u |
   while read -r range path deleted; do
     echo "  lib: $path ${deleted:-}  markers=$(markers "$d/map_files/$range")"
@@ -195,6 +202,14 @@ On a server that is fixed and restarted, the output looks like this (your PIDs a
 ```text
 PID 812 comm=php-fpm8.3 ns=host
   exe: /usr/sbin/php-fpm8.3  markers=full-fix
+```
+
+For Apache with mod_php, the PHP code is in `libphp*.so`, so the check reads the `lib:` lines and skips the Apache binary itself:
+
+```text
+PID 1033 comm=apache2 ns=host
+  exe: /usr/sbin/apache2  (web server; PHP is in the lib lines below)
+  lib: /usr/lib/apache2/modules/libphp7.4.so   markers=eol-backport
 ```
 
 What the results mean:
@@ -217,13 +232,20 @@ systemctl reload php7.4-fpm   # the unit is named after your version, for exampl
 systemctl restart apache2   # httpd on RHEL-family systems
 ```
 
-Then run `check-php-procs.sh` again. Expected result: no `(deleted)`, and every line shows `full-fix` or `eol-backport`.
+Then run `check-php-procs.sh` again. Expected result: no `(deleted)`, and every `markers=` value is `full-fix` or `eol-backport`.
 
 ## 6. Docker: rebuild the image, then recreate the container
 
 The official `php:7.4`, `php:8.0` and `php:8.1` images were not rebuilt for PHP2Shell. A container based on them stays unfixed until you change the base.
 
-1. Check the image without running your app. Copy the binary your container serves with out of the image, then run the step 2 check on the copy. In the official `-fpm` images it is `/usr/local/sbin/php-fpm`:
+1. Check the image without running your app. Find the PHP binaries in the image:
+
+   ```sh
+   docker run --rm --entrypoint sh IMAGE -c \
+     'find / \( -name php-fpm -o -name "libphp*.so" -o -name php \) -type f 2>/dev/null'
+   ```
+
+   Copy the one your container serves with out of the image, then run the step 2 check on the copy. In the official `-fpm` images it is `/usr/local/sbin/php-fpm`:
 
    ```sh
    id=$(docker create IMAGE)
@@ -234,7 +256,19 @@ The official `php:7.4`, `php:8.0` and `php:8.1` images were not rebuilt for PHP2
 
    Expected result for an image based on the official `php:7.4-fpm`: `NONE`.
 
-2. Fix the image: move the base to `php:8.2` or newer, or install PHP from a patched repository from the table above. Rebuild the image.
+2. Fix the image. The official images build PHP from source into `/usr/local`, so no package upgrade can patch them. Choose one:
+   - Change `FROM php:7.4-fpm` to `FROM php:8.2-fpm` or newer, if your application runs on 8.2.
+   - Build on a distro image and install PHP from a patched package in the table above. For example, on Ubuntu 24.04 the `php8.3-fpm` package is fixed from `8.3.6-0ubuntu0.24.04.13`:
+
+     ```dockerfile
+     FROM ubuntu:24.04
+     RUN apt-get update && apt-get install -y --no-install-recommends php8.3-fpm \
+      && rm -rf /var/lib/apt/lists/*
+     ```
+
+     To stay on 7.4, use the ondrej/sury or Remi packages from the table. Their setup steps are on [packages.sury.org](https://packages.sury.org/php/README.txt) and [rpms.remirepo.net](https://rpms.remirepo.net/).
+
+   - Rebuild the image.
 3. Recreate the container from the new image. An `apt upgrade` run through `docker exec` changes only that container's writable layer. It is gone the next time the container is created from the old image.
 4. From the host, run `check-php-procs.sh`. To see which container a PID belongs to, read `/proc/PID/cgroup`. On cgroup v2 with systemd it shows `docker-<container id>.scope`.
 
@@ -246,4 +280,4 @@ A marker shows that the code from the official fix commit is in the binary. It d
 - Community backports for 7.3 and older can miss paths. For example, an issue on [vperetti/php-cve-2026-109618-109619-backports](https://github.com/vperetti/php-cve-2026-109618-109619-backports/issues/2) lists fatal error paths that the official 7.4 patch converts but the 7.x and 5.x ports do not.
 - The [CVE-2026-109619 advisory](https://github.com/php/php-src/security/advisories/GHSA-6wmf-4rv5-p3rp) says: "It might be prudent to set `session.upload_progress.enabled=0` if you don't need this feature even after applying the patch". This applies to every build, including the full fix. If you do not use upload progress, set it to `0` in `php.ini` and reload.
 
-The way out of all three is the same: move to PHP 8.2 or newer, where the full fix is released.
+A backport buys time. The lasting fix is PHP 8.2 or newer, where the full fix is released.
