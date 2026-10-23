@@ -22,6 +22,7 @@ readerCheck:
 - Sources accessed 23 October 2026. The checks were run on 23 October 2026 against real packages: official Docker php:8.4.26 and php:8.4.27, Ubuntu noble php8.3 8.3.6-0ubuntu0.24.04.13, Ubuntu jammy php8.1 8.1.2-1ubuntu2 and 8.1.2-1ubuntu2.28, sury php7.4 7.4.33-31+0~20261021.121. Not tested: Apache mod_php reload, LiteSpeed, FrankenPHP static builds, Windows, RPM changelogs.
 - Research reports (workspace): plans/reports/research-261023-1643-php2shell-verify-method-and-scale.md and research-261023-1643-php2shell-vendor-patch-status.md.
 - The Apache sample output in step 4 is illustrative: the lib: path handling was tested with a simulated mapping, not a real Apache + libphp.
+- Worked example transcript (real output, 23/10/2026, throwaway ubuntu:22.04 container with --cap-add SYS_PTRACE): plans/reports/evidence-261023-1753-php2shell-ubuntu-jammy-before-after-transcript.txt in the workspace. Only the shell prompt and blank lines were tidied.
 - Owner: confirm the first-person wording in the intro ("I checked") is fine, or change it to neutral.
 -->
 
@@ -29,7 +30,7 @@ On 21 October 2026 PHP disclosed two critical remote code execution flaws, toget
 
 If you run anything older, your fix is a backport. Ubuntu, Red Hat, Freexian (paid Debian 11 support), ondrej (sury), Remi, cPanel and Plesk patch PHP 7.4, 8.0 or 8.1 **without changing the version number**. A patched Ubuntu 24.04 still says 8.3.6. A patched sury build still says 7.4.33. So `php -v`, the `X-Powered-By` header and most scanners cannot tell you whether you are safe.
 
-What you can check is the binary itself. The fix adds new error strings and new exported functions to PHP. They are in the file even when it is stripped. I checked the commands below on 23 October 2026 against real packages before and after the fix.
+What you can check is the binary itself. The fix adds new error strings and new exported functions to PHP. They are in the file even when it is stripped. I checked the commands below on 23 October 2026 against real packages before and after the fix. The [worked example](#worked-example-one-server-before-and-after-the-fix) near the end shows every check on one server, with the real output, before and after the upgrade.
 
 ## Table of contents
 
@@ -93,8 +94,12 @@ The fix adds strings and exported functions that do not exist in any PHP source 
 
 `grep -a` reads the binary as text. It needs no extra tools, so it also works inside slim Docker images:
 
+Save this as `check-php-binary.sh`:
+
 ```sh
-FILE=/usr/sbin/php-fpm7.4   # the binary from step 1, for example php-fpm8.3 or libphp7.4.so
+#!/bin/sh
+# check-php-binary.sh FILE — prints full-fix, eol-backport or NONE
+FILE=${1:?usage: check-php-binary.sh /path/to/php-fpm-or-libphp}
 
 if grep -aqF 'memory_hard_limit_percent' "$FILE" &&
    grep -aqF 'Hard memory limit of %zu bytes exhausted' "$FILE"; then
@@ -105,6 +110,12 @@ elif grep -aqF 'zend_mm_safe_error_ex' "$FILE" ||
 else
   echo "NONE"
 fi
+```
+
+Run it on the binary from step 1:
+
+```sh
+sh check-php-binary.sh /usr/sbin/php-fpm7.4
 ```
 
 Expected output: `full-fix`, `eol-backport` or `NONE`. A count over the php-src source trees found none of these strings in 7.4, 8.0, 8.1, 8.2.34 or 8.4.26 before the fix, so an unfixed build gives `NONE`. These are the results on real packages:
@@ -180,14 +191,14 @@ On 8.2 and newer there is a shorter check: `php -n -r 'var_dump(ini_get("memory_
 
 Upgrading the package replaces the file on disk. A process that started before the upgrade keeps running the old code. Linux shows this as `(deleted)` after the path in `/proc/PID/exe` and `/proc/PID/maps`.
 
-This script checks every running PHP process, including the ones in containers. It reads the file each process actually loaded through `/proc/PID/exe` and `/proc/PID/map_files/`, so it also works when that file was deleted. Run it as root. Since Linux 5.9, reading `map_files` needs `CAP_SYS_ADMIN` or `CAP_CHECKPOINT_RESTORE` ([proc_pid_map_files(5)](https://man7.org/linux/man-pages/man5/proc_pid_map_files.5.html)).
+This script checks every running PHP process, including the ones in containers. It reads the file each process actually loaded through `/proc/PID/exe` and `/proc/PID/map_files/`, so it also works when that file was deleted. Run it as root on the host. Worker processes run as another user (for example `www-data`), and reading them needs `CAP_SYS_PTRACE`. Root on a normal host has it; root inside a container usually does not, and the script then prints `UNREADABLE`. Since Linux 5.9, reading `map_files` needs `CAP_SYS_ADMIN` or `CAP_CHECKPOINT_RESTORE` ([proc_pid_map_files(5)](https://man7.org/linux/man-pages/man5/proc_pid_map_files.5.html)).
 
 ```bash
 #!/bin/bash
 # check-php-procs.sh — run as root
 set -uo pipefail
 markers() {
-  if ! head -c 4 "$1" >/dev/null 2>&1; then echo "UNREADABLE(run as root)"; return; fi
+  if ! head -c 4 "$1" >/dev/null 2>&1; then echo "UNREADABLE(run as root; needs CAP_SYS_PTRACE)"; return; fi
   if grep -aqF 'memory_hard_limit_percent' "$1" && grep -aqF 'Hard memory limit of %zu bytes exhausted' "$1"; then echo "full-fix"
   elif grep -aqF 'zend_mm_safe_error_ex' "$1" || grep -aqF 'Fatal error: %s in %s on line %d' "$1"; then echo "eol-backport"
   else echo "NONE"; fi
@@ -197,7 +208,8 @@ for d in /proc/[0-9]*; do
   comm=$(cat "$d/comm" 2>/dev/null) || continue
   case "$comm" in php*|httpd*|apache2*|frankenphp*|lsphp*|litespeed*) ;; *) continue ;; esac
   exe=$(readlink "$d/exe" 2>/dev/null) || exe="?"
-  ns="host"; [ "$(readlink "$d/ns/mnt" 2>/dev/null)" != "$(readlink /proc/self/ns/mnt)" ] && ns="other-mnt-ns(container?)"
+  mnt=$(readlink "$d/ns/mnt" 2>/dev/null)
+  if [ -z "$mnt" ]; then ns="?"; elif [ "$mnt" = "$(readlink /proc/self/ns/mnt)" ]; then ns="host"; else ns="other-mnt-ns(container?)"; fi
   echo "PID $pid comm=$comm ns=$ns"
   case "$comm" in
     httpd*|apache2*|litespeed*) echo "  exe: $exe  (web server; PHP is in the lib lines below)" ;;
@@ -233,7 +245,7 @@ What the results mean:
 
 ## 5. Reload PHP-FPM, restart Apache
 
-**PHP-FPM:** a reload is enough. On `SIGUSR2` the FPM master runs `execvp()` on its own path, so it loads the new binary ([php-fpm(8)](https://github.com/php/php-src/blob/PHP-8.4/sapi/fpm/php-fpm.8.in): "graceful reload of all workers + reload of fpm conf/binary"). The upstream systemd unit uses exactly that for `reload`. In a test with the official `php:8.4.26-fpm-alpine` image, where the `php-fpm` binary was replaced by the 8.4.27 one while it ran, the master kept its PID, lost the `(deleted)` mark and showed the full-fix marker. The new workers showed it too.
+**PHP-FPM:** a reload is enough. On `SIGUSR2` the FPM master runs `execvp()` on its own path, so it loads the new binary ([php-fpm(8)](https://github.com/php/php-src/blob/PHP-8.4/sapi/fpm/php-fpm.8.in): "graceful reload of all workers + reload of fpm conf/binary"). The upstream systemd unit uses exactly that for `reload`. When FPM runs in the foreground, as under systemd (`--nodaemonize`) and in Docker, the master keeps its PID. In a test with the official `php:8.4.26-fpm-alpine` image, where the `php-fpm` binary was replaced by the 8.4.27 one while it ran, the master kept its PID, lost the `(deleted)` mark and showed the full-fix marker. The new workers showed it too.
 
 ```sh
 systemctl reload php7.4-fpm   # the unit is named after your version, for example php8.3-fpm
@@ -266,7 +278,7 @@ The official `php:7.4`, `php:8.0` and `php:8.1` images were not rebuilt for PHP2
    id=$(docker create IMAGE)
    docker cp "$id":/usr/local/sbin/php-fpm /tmp/php-fpm-check
    docker rm "$id"
-   FILE=/tmp/php-fpm-check   # then run the step 2 check
+   sh check-php-binary.sh /tmp/php-fpm-check
    ```
 
    Expected result for an image based on the official `php:7.4-fpm`: `NONE`.
@@ -296,6 +308,124 @@ The official `php:7.4`, `php:8.0` and `php:8.1` images were not rebuilt for PHP2
 
 3. Recreate the container from the new image. An `apt upgrade` run through `docker exec` changes only that container's writable layer. It is gone the next time the container is created from the old image.
 4. From the host, run `check-php-procs.sh`. To see which container a PID belongs to, read `/proc/PID/cgroup`. On cgroup v2 with systemd it shows `docker-<container id>.scope`.
+
+## Worked example: one server before and after the fix
+
+This is the whole check on one server, with the real output. It ran on 23 October 2026 in a throwaway Ubuntu 22.04 container, started with `--cap-add SYS_PTRACE` so that root could read the worker processes as root on a normal host can.
+
+The server first had `php8.1-fpm 8.1.2-1ubuntu2`, the build Ubuntu 22.04 shipped in April 2022, with FPM running. Then it got the fixed `8.1.2-1ubuntu2.28` from [USN-8948-1](https://ubuntu.com/security/notices/USN-8948-1).
+
+### Before the fix
+
+The version says 8.1.2:
+
+```text
+# php-fpm8.1 -v | head -1
+PHP 8.1.2 (fpm-fcgi) (built: Apr  7 2022 17:46:26)
+```
+
+The binary has no marker (step 2):
+
+```text
+# sh check-php-binary.sh /usr/sbin/php-fpm8.1
+NONE
+```
+
+The probe (step 3) shows the old behaviour: the shutdown function still runs after the out-of-memory error, and the exit code is 255:
+
+```text
+# php -n -d memory_limit=10M -d display_errors=stderr /demo/oom-probe.php; echo "exit=$?"
+Fatal error: Allowed memory size of 10485760 bytes exhausted (tried to allocate 25165856 bytes) in /demo/oom-probe.php on line 4
+shutdown function ran
+exit=255
+```
+
+The running FPM master and its two workers all run unfixed code (step 4):
+
+```text
+# bash check-php-procs.sh
+PID 6491 comm=php-fpm8.1 ns=host
+  exe: /usr/sbin/php-fpm8.1  markers=NONE
+PID 6492 comm=php-fpm8.1 ns=host
+  exe: /usr/sbin/php-fpm8.1  markers=NONE
+PID 6493 comm=php-fpm8.1 ns=host
+  exe: /usr/sbin/php-fpm8.1  markers=NONE
+```
+
+### After `apt-get install --only-upgrade php8.1-fpm php8.1-cli`
+
+The package is fixed. The upstream number in the version is still 8.1.2; only the Ubuntu revision after it changed:
+
+```text
+# dpkg-query -W php8.1-fpm
+php8.1-fpm	8.1.2-1ubuntu2.28
+# php -v | head -1
+PHP 8.1.2-1ubuntu2.28 (cli) (built: Oct 19 2026 18:54:45) (NTS)
+```
+
+The file on disk now has the EOL backport marker:
+
+```text
+# sh check-php-binary.sh /usr/sbin/php-fpm8.1
+eol-backport
+```
+
+But the site is **not** fixed yet. The upgrade did not restart FPM (in the container, apt printed `invoke-rc.d: policy-rc.d denied execution of restart.`), so every process still runs the deleted old binary:
+
+```text
+# bash check-php-procs.sh
+PID 6491 comm=php-fpm8.1 ns=host
+  exe: /usr/sbin/php-fpm8.1 (deleted)  markers=NONE
+PID 6492 comm=php-fpm8.1 ns=host
+  exe: /usr/sbin/php-fpm8.1 (deleted)  markers=NONE
+PID 6493 comm=php-fpm8.1 ns=host
+  exe: /usr/sbin/php-fpm8.1 (deleted)  markers=NONE
+```
+
+This is the state that `php -v`, `dpkg` and a version scanner all report as fixed.
+
+### After the reload
+
+The unit file shows what `systemctl reload` does:
+
+```text
+# grep ExecReload /lib/systemd/system/php8.1-fpm.service
+ExecReload=/bin/kill -USR2 $MAINPID
+```
+
+The same signal, sent by hand because the container has no systemd, then the check again:
+
+```text
+# kill -USR2 "$(cat /run/php/php8.1-fpm.pid)"; sleep 2; bash check-php-procs.sh
+PID 12856 comm=php-fpm8.1 ns=host
+  exe: /usr/sbin/php-fpm8.1  markers=eol-backport
+PID 12857 comm=php-fpm8.1 ns=host
+  exe: /usr/sbin/php-fpm8.1  markers=eol-backport
+PID 12858 comm=php-fpm8.1 ns=host
+  exe: /usr/sbin/php-fpm8.1  markers=eol-backport
+```
+
+No `(deleted)`, and every process has the marker. Here FPM was started as a daemon, so the reload forked a new master with a new PID. Under systemd the PID stays the same.
+
+The probe now stops at the error, with no shutdown function and exit code 1:
+
+```text
+# php -n -d memory_limit=10M -d display_errors=stderr /demo/oom-probe.php; echo "exit=$?"
+
+Fatal error: Allowed memory size of 10485760 bytes exhausted (tried to allocate 25165856 bytes) in /demo/oom-probe.php on line 4
+exit=1
+```
+
+Ubuntu's changelog names the fix, so on this package the changelog check also works:
+
+```text
+# zcat /usr/share/doc/php8.1-fpm/changelog.Debian.gz | grep -E 'CVE-2026-10961(8|9)' | head -3
+    - debian/patches/CVE-2026-109618_109619.patch: Avoid state corruption via
+    - CVE-2026-109618
+    - CVE-2026-109619
+```
+
+The order matters: the package check said "fixed" one step before the server really was. Only the process check caught the gap.
 
 ## What a marker does not prove
 
