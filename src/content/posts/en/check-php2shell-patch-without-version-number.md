@@ -29,6 +29,13 @@ On 21 October 2026 PHP disclosed two critical remote code execution flaws, calle
 
 So `php -v` and version scanners cannot tell you if you are safe. The binary can. Below are three checks, each with the real output I got on 23 October 2026 from one Ubuntu 22.04 server with `php8.1-fpm`, before and after the fix.
 
+**TL;DR**
+
+1. Upgrade PHP from your distro or repository. `php -v` will look the same.
+2. Run [`check-php-binary.sh`](#1-check-the-binary-for-the-fix-marker) on your `php-fpm` or `libphp*.so`. `full-fix` or `eol-backport` means the file has the fix. `NONE` means it does not.
+3. Run [`check-php-procs.sh`](#2-check-the-processes-that-are-running-now) as root. Any `(deleted)` line means a process still runs the old code: `systemctl reload php*-fpm`, or restart Apache for mod_php, then check again.
+4. Official Docker images `php:7.4`, `8.0` and `8.1` are not patched. Change the base image and rebuild.
+
 ## Table of contents
 
 ## Does this guide apply to you?
