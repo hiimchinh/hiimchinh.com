@@ -26,7 +26,7 @@ readerCheck:
 - Owner: confirm the first-person wording in the intro ("I checked") is fine, or change it to neutral.
 -->
 
-On 21 October 2026 PHP disclosed two critical remote code execution flaws, together called PHP2Shell: [CVE-2026-109618](https://github.com/php/php-src/security/advisories/GHSA-w8hw-w9fx-j79w) and [CVE-2026-109619](https://github.com/php/php-src/security/advisories/GHSA-6wmf-4rv5-p3rp). Fixed releases exist only for 8.2 to 8.5: 8.2.35, 8.3.36, 8.4.27 and 8.5.12.
+On 21 October 2026 PHP disclosed two critical remote code execution flaws, together called PHP2Shell: [CVE-2026-109618](https://github.com/php/php-src/security/advisories/GHSA-w8hw-w9fx-j79w) and [CVE-2026-109619](https://github.com/php/php-src/security/advisories/GHSA-6wmf-4rv5-p3rp). php.net released fixed versions only for 8.2 to 8.5: 8.2.35, 8.3.36, 8.4.27 and 8.5.12. Distributions copy the same fix into the versions they ship, so Ubuntu 24.04 has the full fix in its 8.3.6.
 
 If you run anything older, your fix is a backport. Ubuntu, Red Hat, Freexian (paid Debian 11 support), ondrej (sury), Remi, cPanel and Plesk patch PHP 7.4, 8.0 or 8.1 **without changing the upstream version number**. A patched sury build still says 7.4.33. A patched Ubuntu 22.04 says `8.1.2-1ubuntu2.28`: the package revision changes, but the PHP version is still 8.1.2. So a scanner or an `X-Powered-By` check that reads the PHP version sees the same number before and after, and `php -v` at best tells you the package revision, not whether the binary that serves requests has the fix.
 
@@ -193,14 +193,14 @@ On 8.2 and newer there is a shorter check: `php -n -r 'var_dump(ini_get("memory_
 
 Upgrading the package replaces the file on disk. A process that started before the upgrade keeps running the old code. Linux shows this as `(deleted)` after the path in `/proc/PID/exe` and `/proc/PID/maps`.
 
-This script checks every running PHP process, including the ones in containers. It reads the file each process actually loaded through `/proc/PID/exe` and `/proc/PID/map_files/`, so it also works when that file was deleted. Run it as root on the host. Worker processes run as another user (for example `www-data`), and reading them needs `CAP_SYS_PTRACE`. Root on a normal host has it; root inside a container usually does not, and the script then prints `UNREADABLE`. Since Linux 5.9, reading `map_files` needs `CAP_SYS_ADMIN` or `CAP_CHECKPOINT_RESTORE` ([proc_pid_map_files(5)](https://man7.org/linux/man-pages/man5/proc_pid_map_files.5.html)).
+This script checks every running PHP process, including the ones in containers. It reads the file each process actually loaded through `/proc/PID/exe` and `/proc/PID/map_files/`, so it also works when that file was deleted. Run it as root on the host. Worker processes run as another user (for example `www-data`), and reading them needs `CAP_SYS_PTRACE`. Root on a normal host has it; root inside a container usually does not, and the script then prints `UNREADABLE`. Reading `lib:` lines also needs the `map_files` capability below. Since Linux 5.9, reading `map_files` needs `CAP_SYS_ADMIN` or `CAP_CHECKPOINT_RESTORE` ([proc_pid_map_files(5)](https://man7.org/linux/man-pages/man5/proc_pid_map_files.5.html)).
 
 ```bash
 #!/bin/bash
 # check-php-procs.sh — run as root
 set -uo pipefail
 markers() {
-  if ! head -c 4 "$1" >/dev/null 2>&1; then echo "UNREADABLE(run as root; needs CAP_SYS_PTRACE)"; return; fi
+  if ! head -c 4 "$1" >/dev/null 2>&1; then echo "UNREADABLE(run as root on the host)"; return; fi
   if grep -aqF 'memory_hard_limit_percent' "$1" && grep -aqF 'Hard memory limit of %zu bytes exhausted' "$1"; then echo "full-fix"
   elif grep -aqF 'zend_mm_safe_error_ex' "$1" || grep -aqF 'Fatal error: %s in %s on line %d' "$1"; then echo "eol-backport"
   else echo "NONE"; fi
