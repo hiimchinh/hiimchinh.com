@@ -12,6 +12,10 @@ readerQuestions:
   - "Do I need to restart PHP-FPM, or is systemctl reload enough to load the patched binary?"
   - "My PHP runs in Docker containers based on the official php:7.4 image. What do I do?"
   - "The check finds the fix marker. Does that mean my server is no longer vulnerable?"
+readerCheck:
+  date: 2026-10-23
+  full: 6
+  total: 6
 ---
 
 <!-- DRAFT NOTES
@@ -21,7 +25,7 @@ readerQuestions:
 - Owner: confirm the first-person wording ("I ran") is fine.
 -->
 
-On 21 October 2026 PHP disclosed two critical remote code execution flaws, called PHP2Shell: [CVE-2026-109618](https://github.com/php/php-src/security/advisories/GHSA-w8hw-w9fx-j79w) and [CVE-2026-109619](https://github.com/php/php-src/security/advisories/GHSA-6wmf-4rv5-p3rp). php.net released fixes only for 8.2.35, 8.3.36, 8.4.27 and 8.5.12. Everyone on 7.4, 8.0 or 8.1 gets a backport from their distro or repository, and a backport keeps the PHP version: a fixed sury build still says 7.4.33, and a fixed Ubuntu 22.04 build still says 8.1.2, with only the package revision after it changed.
+On 21 October 2026 PHP disclosed two critical remote code execution flaws, called PHP2Shell: [CVE-2026-109618](https://github.com/php/php-src/security/advisories/GHSA-w8hw-w9fx-j79w) and [CVE-2026-109619](https://github.com/php/php-src/security/advisories/GHSA-6wmf-4rv5-p3rp). php.net released fixes only for 8.2.35, 8.3.36, 8.4.27 and 8.5.12. For 7.4, 8.0 and 8.1 the fix comes only as a backport from your distro or repository, and a backport keeps the PHP version: a fixed sury build still says 7.4.33, and a fixed Ubuntu 22.04 build still says 8.1.2, with only the package revision after it changed.
 
 So `php -v` and version scanners cannot tell you if you are safe. The binary can. Below are three checks, each with the real output I got on 23 October 2026 from one Ubuntu 22.04 server with `php8.1-fpm`, before and after the fix.
 
@@ -30,7 +34,7 @@ So `php -v` and version scanners cannot tell you if you are safe. The binary can
 ## Does this guide apply to you?
 
 - **PHP 7.4, 8.0, 8.1 and 8.2 to 8.5 on Linux:** yes.
-- **PHP 7.3 and older, 5.x:** steps 2 and 3 apply. Upstream has no fix for these, so each vendor writes its own patch, and the marker in step 1 can be missing on a patched build. Check that your package changelog names the CVEs instead, for example `zcat /usr/share/doc/php5.6-fpm/changelog.Debian.gz | grep CVE-2026-10961`.
+- **PHP 7.3 and older, 5.x:** steps 2 and 3 apply. Upstream has no fix for these, so each vendor writes its own patch, and the marker in step 1 can be missing on a patched build. Check that your package changelog names the CVEs instead, for example `zcat /usr/share/doc/php5.6-fpm/changelog.Debian.gz | grep -E 'CVE-2026-10961(8|9)'`.
 - **PHP on Windows:** not covered. Nothing here was tested on Windows.
 
 ## 1. Check the binary for the fix marker
