@@ -32,8 +32,8 @@ So `php -v` and version scanners cannot tell you if you are safe. The binary can
 **TL;DR**
 
 1. Upgrade PHP from your distro or repository. `php -v` will look the same.
-2. Run [`check-php-binary.sh`](#1-check-the-binary-for-the-fix-marker) on your `php-fpm` or `libphp*.so`. `full-fix` or `eol-backport` means the file has the fix. `NONE` means it does not.
-3. Run [`check-php-procs.sh`](#2-check-the-processes-that-are-running-now) as root. Any `(deleted)` line means a process still runs the old code: `systemctl reload php*-fpm`, or restart Apache for mod_php, then check again.
+2. Run [`check-php-binary.sh`](#1-check-the-binary-for-the-fix-marker), a 10-line script in step 1 that greps the binary for strings only the fix adds, on your `php-fpm` or `libphp*.so`. `full-fix` or `eol-backport` means the file has the fix. `NONE` means it does not.
+3. Run [`check-php-procs.sh`](#2-check-the-processes-that-are-running-now) (step 2) as root to check the code each running PHP process actually loaded. Any `(deleted)` line means a process still runs the old code: `systemctl reload php*-fpm`, or restart Apache for mod_php, then check again.
 4. Official Docker images `php:7.4`, `8.0` and `8.1` are not patched. Change the base image and rebuild.
 
 ## Table of contents
