@@ -136,7 +136,7 @@ Expected output: at least one line naming `CVE-2026-109618` or `CVE-2026-109619`
 
 The fix changes what PHP does when it runs out of memory. This probe makes the CLI use too much memory **in its own process**. It is not an exploit: it sends no request and touches no session or upload code.
 
-Run it with the CLI binary from the same build. Do not run it inside a production FPM pool.
+Run it with the CLI binary from the same build, for example `/usr/bin/php7.4` next to `php-fpm7.4`, or `/usr/local/bin/php` in the official images. The probe tests that CLI file, not the FPM or Apache binary, so use step 2 or step 4 for those. Do not run it inside a production FPM pool.
 
 ```php
 <?php
@@ -227,6 +227,8 @@ What the results mean:
 ```sh
 systemctl reload php7.4-fpm   # the unit is named after your version, for example php8.3-fpm
 ```
+
+The same holds for the Debian package from ondrej/sury. Its `php7.4-fpm.service` has `ExecReload=/bin/kill -USR2 $MAINPID`, so `systemctl reload` sends exactly that signal. In a test with `php7.4-fpm 1:7.4.33-31` on Debian 12, the binary was replaced while FPM ran. Before the signal the master showed `exe: /usr/sbin/php-fpm7.4 (deleted)`. After it, the master had the same PID, `exe: /usr/sbin/php-fpm7.4` without `(deleted)`, and new worker PIDs.
 
 **Apache with mod_php:** restart it. It is not verified that a graceful reload loads the new `libphp`.
 
