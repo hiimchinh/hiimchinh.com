@@ -130,6 +130,13 @@ zcat /usr/share/doc/php7.2-fpm/changelog.Debian.gz | grep -E 'CVE-2026-10961(8|9
 rpm -q --changelog php-fpm | grep -E 'CVE-2026-10961(8|9)'  # RHEL family (not tested)
 ```
 
+Replace `php7.2-fpm` with the package that owns your binary. This works for any PHP version, including 5.6 and panel builds installed as packages:
+
+```sh
+dpkg -S "$(readlink -f "$FILE")"   # Debian, Ubuntu: prints the package name
+rpm -qf "$FILE"                    # RHEL family, CloudLinux
+```
+
 Expected output: at least one line naming `CVE-2026-109618` or `CVE-2026-109619`. No output means the vendor did not record the fix in that package.
 
 ## 3. Optional: confirm the behaviour with a safe local probe
