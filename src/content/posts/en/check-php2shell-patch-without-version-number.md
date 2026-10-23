@@ -36,7 +36,7 @@ It applies when you run PHP on **Linux** and you want to know if the PHP2Shell f
 | Your setup                                                         | What this guide does for you                                                                                                                                                                                                                                                                              |
 | ------------------------------------------------------------------ | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | PHP 8.2 to 8.5 from any source                                     | The check finds the "full fix" marker.                                                                                                                                                                                                                                                                    |
-| PHP 7.4, 8.0 or 8.1 with a fixed package from the table below      | The check finds the "EOL backport" marker on the Ubuntu and ondrej/sury packages, which were tested. The other vendors' builds were not tested; if one reports `NONE`, use the changelog check at the end of step 2.                                                                                      |
+| PHP 7.4, 8.0 or 8.1 with a fixed package from the table below      | The check finds the "EOL backport" marker on Ubuntu 22.04 php8.1 and ondrej/sury php7.4, which were tested. The other vendors' builds were not tested; if one reports `NONE`, use the changelog check at the end of step 2.                                                                               |
 | PHP 7.3 or older, PHP 5.x (including Ubuntu Pro php7.2 and php7.0) | Partly. Upstream has no fix for these, so each vendor writes its own patch. The marker check was not tested on these builds and can report `NONE` on a patched build. Use the changelog check at the end of step 2, then plan an upgrade. Steps 4 to 6 (running processes, reload, Docker) apply in full. |
 | PHP on Windows                                                     | Not covered. The commands here were not tested on Windows.                                                                                                                                                                                                                                                |
 | A shared host where you have no shell                              | Not covered. Ask the host for the package version and compare it with the table below.                                                                                                                                                                                                                    |
@@ -103,7 +103,7 @@ else
 fi
 ```
 
-Expected output: `full-fix`, `eol-backport` or `NONE`. None of these strings exists in the PHP 7.4, 8.0, 8.1, 8.2.34 or 8.4.26 source before the fix, so an unfixed build gives `NONE`. These are the results on real packages:
+Expected output: `full-fix`, `eol-backport` or `NONE`. A count over the php-src source trees found none of these strings in 7.4, 8.0, 8.1, 8.2.34 or 8.4.26 before the fix, so an unfixed build gives `NONE`. These are the results on real packages:
 
 | Package                                                   | `php -v` shows    | Result         |
 | --------------------------------------------------------- | ----------------- | -------------- |
@@ -159,7 +159,7 @@ With the probe exactly as written above:
 | Full fix     | `Hard memory limit of 20971520 bytes exhausted …`, no shutdown line, `exit=137`                            |
 | EOL backport | `Fatal error: Allowed memory size …` on stderr, no shutdown line, `exit=1`                                 |
 
-The exit codes come from the code paths. 255 is PHP's normal exit after a fatal error, and the shutdown function still runs. The full fix stops the process at once with `_exit(137)` when memory passes the hard limit (twice `memory_limit` here). The EOL backport stops it at once with `_exit(1)`. In both fixed cases no PHP code runs after the out-of-memory error.
+The exit codes come from the code paths. 255 is PHP's normal exit after a fatal error, and the shutdown function still runs. The full fix stops the process at once with `_exit(137)` when memory passes the hard limit (twice `memory_limit` here). The EOL backport stops it at once with `_exit(1)`. Here 137 is an exit code that PHP sets itself. Do not confuse it with the 137 that a shell or Docker reports when the kernel's out-of-memory killer kills a process (128 + signal 9). In both fixed cases no PHP code runs after the out-of-memory error.
 
 Keep the string interpolation on the `$b` line. With one big `str_repeat()` the fixed 8.4.27 build still answers `exit=255`, because that call takes a path that fails softly.
 
@@ -206,7 +206,7 @@ PID 812 comm=php-fpm8.3 ns=host
   exe: /usr/sbin/php-fpm8.3  markers=full-fix
 ```
 
-For Apache with mod_php, the PHP code is in `libphp*.so`, so the check reads the `lib:` lines and skips the Apache binary itself:
+For Apache with mod_php, the PHP code is in `libphp*.so`, so the check reads the `lib:` lines and skips the Apache binary itself. The output looks like this (illustrative: this path was tested with a simulated library mapping, not with a real Apache):
 
 ```text
 PID 1033 comm=apache2 ns=host
@@ -222,7 +222,7 @@ What the results mean:
 
 ## 5. Reload PHP-FPM, restart Apache
 
-**PHP-FPM:** a reload is enough. On `SIGUSR2` the FPM master runs `execvp()` on its own path, so it loads the new binary ([php-fpm(8)](https://github.com/php/php-src/blob/PHP-8.4/sapi/fpm/php-fpm.8.in): "graceful reload of all workers + reload of fpm conf/binary"). The upstream systemd unit uses exactly that for `reload`. In the test, the master kept its PID, lost the `(deleted)` mark and showed the full-fix marker. The new workers showed it too.
+**PHP-FPM:** a reload is enough. On `SIGUSR2` the FPM master runs `execvp()` on its own path, so it loads the new binary ([php-fpm(8)](https://github.com/php/php-src/blob/PHP-8.4/sapi/fpm/php-fpm.8.in): "graceful reload of all workers + reload of fpm conf/binary"). The upstream systemd unit uses exactly that for `reload`. In a test with the official `php:8.4.26-fpm-alpine` image, where the `php-fpm` binary was replaced by the 8.4.27 one while it ran, the master kept its PID, lost the `(deleted)` mark and showed the full-fix marker. The new workers showed it too.
 
 ```sh
 systemctl reload php7.4-fpm   # the unit is named after your version, for example php8.3-fpm
@@ -279,7 +279,8 @@ The official `php:7.4`, `php:8.0` and `php:8.1` images were not rebuilt for PHP2
 
      Built on 23 October 2026, it installed `php7.4-fpm 1:7.4.33-31+0~20261021.121+debian12~1`, the step 2 check on `/usr/sbin/php-fpm7.4` reported `eol-backport`, and `php-fpm7.4` ran as the container's main process. Add the PHP extensions your application needs (`php7.4-mysql`, `php7.4-gd`, …) to the `apt-get install` line. The official image keeps its configuration in `/usr/local/etc`, this one in `/etc/php/7.4`, so move your settings across.
 
-   - Rebuild the image.
+   Then rebuild the image.
+
 3. Recreate the container from the new image. An `apt upgrade` run through `docker exec` changes only that container's writable layer. It is gone the next time the container is created from the old image.
 4. From the host, run `check-php-procs.sh`. To see which container a PID belongs to, read `/proc/PID/cgroup`. On cgroup v2 with systemd it shows `docker-<container id>.scope`.
 
