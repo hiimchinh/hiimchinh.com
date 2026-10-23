@@ -12,6 +12,10 @@ readerQuestions:
   - "Do I need to restart PHP-FPM, or is systemctl reload enough to load the patched binary?"
   - "My PHP runs in Docker containers based on the official php:7.4 image. What do I do?"
   - "The check finds the fix marker. Does that mean my server is no longer vulnerable?"
+readerCheck:
+  date: 2026-10-23
+  full: 6
+  total: 6
 ---
 
 <!-- DRAFT NOTES
