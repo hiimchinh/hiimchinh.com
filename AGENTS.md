@@ -91,8 +91,10 @@ job runs the steps below every morning (06:30 Asia/Ho_Chi_Minh).
 4. **Stop if the owner is behind.** When 2 or more post PRs wait for the
    owner, write nothing new. The report says which drafts wait.
 5. **Write one post** from the highest-priority idea, following "Writing a
-   post". Shape: one task, 400–900 words, real commands and real output, a
-   mistake or a surprise from the owner's own work. Open the PR from branch
+   post". Owner requirement: short, concise, exact, to the point. One task, at
+   most 600 words, the answer in the first two sentences, real commands and
+   real output, a mistake or a surprise from the owner's own work. Every
+   sentence carries a fact, a step or an output; cut the rest. Open the PR from branch
    `cms/posts/<slug>` with label `sveltia-cms/pending_review`, so the draft also
    appears in `/admin/` for editing in the browser.
 6. **Report** in Vietnamese, at most 120 words: the preview link of each draft
