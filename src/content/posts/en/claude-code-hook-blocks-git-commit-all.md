@@ -21,123 +21,45 @@ factCheck:
 ---
 
 <!-- DRAFT NOTES
-Claims to confirm: the incident of 14 October (21 files committed, 20 reverted two minutes later);
-the counts below come from a script over local Claude Code transcripts, windows in +07.
+OUTLINE for Chinh to write in his own words (owner 27/10: the AI draft read as AI).
+Every number below was reproduced from the transcripts with the scripts in the private ledger
+(blog-ideas/claims/claude-code-hook-blocks-git-commit-all/). Keep the numbers; write the rest your way.
+After you write it, the agent re-runs the fact check and the reader check, and updates factCheck/readerCheck.
+Target: ≤600 words of prose, the result in the first two sentences.
 -->
 
-A PreToolUse hook in Claude Code refuses `git commit -a` and tells the agent the safe command. From 15 October 09:43 to 26 October 24:00 (+07), agents in my sessions tried `git commit -a` 40 times; the hook refused all 40, and 36 times the agent's next command staged named files with `git add`.
+## Outline
 
-## Does this guide apply to you?
+**Opening (2 sentences, the result first)**
+- A hook refused `git commit -a` every time an agent tried it: 40 of 40, 15–26 Oct 2026.
+- In 36 of the 40, the agent's next command staged only its own files.
 
-It applies to Claude Code and to rules visible in the command string.
+**1. What broke (your story, short)**
+- 14 Oct, 22:12: an agent ran `git commit -qam` for a test fix in a checkout shared by several sessions.
+- The commit had 21 files; 20 were another session's unfinished work. Reverted at 22:14.
+- Your words: what you saw, how you found it, how it felt to clean up.
 
-## What broke
+**2. Why a text rule did not stop it**
+- 22:16 the same night: a memory note told agents to stage only their own files.
+- Before the hook existed, agents still ran `git commit -a` 2 more times.
+- From 1 Oct to the hook: 58 such commands, none refused.
+- Quote the Claude Code docs: CLAUDE.md is "context, not enforced configuration".
+- Your words: why you stopped trusting text rules.
 
-I run several agent sessions in one checkout. `git commit -a` stages every tracked change, including another session's unfinished edits.
+**3. The hook (your real one, not a toy)**
+- PreToolUse on Bash, reads the command from stdin, prints a `deny` with a reason that names the safe command.
+- Committed 15 Oct 09:34, tested 09:42, first real refusal 09:51.
+- Show a short excerpt of your real hook (or the deny message), not the whole file.
+- Your words: why the reason text matters (the agent reads it and fixes itself).
 
-On 14 October at 22:12 an agent ran `git commit -qam` for a test fix. The commit changed 21 files; 20 were another session's redesign work. The revert landed at 22:14.
+**4. How you know it works**
+- 40 tried, 40 refused (15 Oct 09:43 – 26 Oct 24:00 +07).
+- Next command: 36 `git add <files>`, 4 `git status`.
+- 0.02 s per call.
+- How to test yours: feed a fake tool call with `jq`, then ask a real session to run the wrong command.
 
-## Why a text rule was not enough
-
-At 22:16 that night a memory note told agents to stage only their own files. Before I committed the hook at 09:34 the next morning, agents ran `git commit -a` twice more, and nothing stopped them. The Claude Code memory docs say why: Claude treats CLAUDE.md "as context, not enforced configuration". The agent weighs the rule against its task, and nothing checks the command. A hook is a script that runs before every command and can refuse it.
-
-From 1 October 00:00 to the hook, agents issued 58 such commands and none was refused.
-
-My order of preference for any "should":
-
-1. **Default:** the tool already does the right thing.
-2. **Block:** a hook refuses the wrong shape and names the right command.
-3. **Gate:** CI fails.
-4. **Instruct:** a line in CLAUDE.md, alone only for rules that need judgment.
-
-Make a rule a hook when a script can decide it from the tool call alone. A rule that needs judgment, such as "reply in Vietnamese", stays as text. Other hooks in my settings refuse a token variable in a `curl` header and a `while` loop that polls `pgrep -f`.
-
-## Step 1: write the hook
-
-The hook reads the tool call as JSON on stdin. To refuse, it prints a `deny` decision. The reason goes back to the agent, so it names the fix. It splits the command with `shlex`, so a commit message that mentions `-a` passes.
-
-```python
-#!/usr/bin/env python3
-import json, re, shlex, sys
-
-def stages_all(cmd):
-    cmd = re.sub(r"<<-?\s*['\"]?(\w+)['\"]?[^\n]*\n.*?\n\s*\1\s*(?=\n|$)", "", cmd, flags=re.S)
-    lex = shlex.shlex(cmd.replace("\n", ";"), posix=True, punctuation_chars=True)
-    lex.whitespace_split = True
-    try:
-        words = list(lex)
-    except ValueError:
-        return False
-    seg = []
-    for w in words + [";"]:
-        if re.fullmatch(r"[;&|()]+", w):
-            if "git" in seg and "commit" in seg[seg.index("git"):]:
-                for opt in seg[seg.index("commit") + 1:]:
-                    if opt == "--":
-                        break
-                    if opt == "--all" or re.fullmatch(r"-[^-a]*a\w*", opt) and not re.match(r"-[^a]*[mFCctS]", opt):
-                        return True
-            seg = []
-        else:
-            seg.append(w)
-    return False
-
-cmd = json.load(sys.stdin).get("tool_input", {}).get("command", "")
-if stages_all(cmd):
-    print(json.dumps({"hookSpecificOutput": {
-        "hookEventName": "PreToolUse",
-        "permissionDecision": "deny",
-        "permissionDecisionReason": "git commit -a stages other sessions' edits. "
-            "Run git status --short, git add <your files>, git commit -m.",
-    }}))
-```
-
-I replayed it over 59,263 Bash commands from my transcripts (1 October 00:00 to 27 October 00:00). It blocks the same 99 commands as my 165-line production hook. It also blocks 2 that the long hook misses, where `git commit` with `-a` follows a `)`.
-
-## Step 2: register it
-
-Add it to `~/.claude/settings.json`:
-
-```json
-"hooks": {
-  "PreToolUse": [
-    {
-      "matcher": "Bash",
-      "hooks": [
-        { "type": "command", "command": "python3 ~/hooks/block-commit-all.py", "timeout": 5 }
-      ]
-    }
-  ]
-}
-```
-
-## Step 3: prove it blocks
-
-Feed it fake tool calls (needs `jq`):
-
-```
-$ jq -nc '{tool_name:"Bash",tool_input:{command:"git commit -qam \"fix: typo\""}}' | python3 block-commit-all.py
-{"hookSpecificOutput": {"hookEventName": "PreToolUse", "permissionDecision": "deny", "permissionDecisionReason": "git commit -a stages other sessions' edits. Run git status --short, git add <your files>, git commit -m."}}
-$ jq -nc '{tool_name:"Bash",tool_input:{command:"git commit -m \"docs: explain the -a flag\""}}' | python3 block-commit-all.py
-$
-```
-
-An allowed command prints nothing. In a new session, ask the agent to run `git commit -am test`. The call must fail with your reason. My production hook returns this text to the agent:
-
-```
-PreToolUse:Bash hook error: `git commit -a` / `--all` stages every tracked modification in the checkout, including uncommitted edits of other agent sessions that share it (2026-10-14: `git commit -qam` swept 20 files of another session's work into main). Instead: run `git status --short`, stage only your own files with `git add <your files>`, then `git commit -m "..."`. For longer work use a separate `git worktree`.
-```
-
-A test call in a throwaway repository was refused at 09:42 on 15 October; the first refusal of real work came at 09:51.
-
-## What the agent did next
-
-- 36 of 40: staged named files with `git add`.
-- 4 of 40: ran `git status` to see what had changed.
-
-## What it costs and what it misses
-
-- The short hook took 0.02 seconds per call in each of five timed runs on 27 October.
+**5. Limits and what you would do instead**
+- `bash -c 'git commit -am x'` gets through.
 - It also blocks `-a` in a worktree that one session owns, where `-a` is safe.
-- `bash -c 'git commit -am x'` passes, because `shlex` reads the quoted text as one word.
-- The production hook's message also says: "For longer work use a separate `git worktree`." A worktree has its own index, so `-a` there sweeps only that worktree's edits.
+- The better default: one `git worktree` per session.
+- Your rule of thumb: default > block > gate > instruct.
