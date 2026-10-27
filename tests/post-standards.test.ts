@@ -2,8 +2,11 @@ import assert from "node:assert/strict";
 import { readFile, readdir } from "node:fs/promises";
 import test from "node:test";
 import {
+  MAX_PROSE_WORDS,
+  WORD_LIMIT_SINCE,
   hasDraftNotes,
   postStandardViolations,
+  proseWordCount,
 } from "../src/utils/post-standards.ts";
 
 const complete = {
@@ -87,6 +90,77 @@ test("no published post still carries draft notes", async () => {
       const text = await readFile(new URL(name, dir), "utf8");
       const isDraft = /^draft:\s*true\s*$/m.test(text.split(/^---$/m)[1] ?? "");
       if (!isDraft && hasDraftNotes(text)) offenders.push(`${locale}/${name}`);
+    }
+  }
+  assert.deepEqual(offenders, []);
+});
+
+const factChecked = {
+  ...complete,
+  pubDatetime: new Date("2026-10-28T07:00:00+07:00"),
+  factCheck: { date: new Date("2026-10-28"), claims: 7, verified: 7 },
+};
+
+test("a post since the fact-check standard passes with every claim verified", () => {
+  assert.deepEqual(postStandardViolations(factChecked), []);
+});
+
+test("a post since the fact-check standard without a fact check fails", () => {
+  assert.deepEqual(
+    postStandardViolations({ ...factChecked, factCheck: undefined }),
+    ["factCheck is missing"]
+  );
+});
+
+test("a post with an unverified claim fails", () => {
+  assert.deepEqual(
+    postStandardViolations({
+      ...factChecked,
+      factCheck: { date: new Date("2026-10-28"), claims: 7, verified: 6 },
+    }),
+    ["factCheck verified 6/7 claims; every claim must be"]
+  );
+});
+
+test("a fact check with no claims fails, because a post with no facts has no proof", () => {
+  assert.deepEqual(
+    postStandardViolations({
+      ...factChecked,
+      factCheck: { date: new Date("2026-10-28"), claims: 0, verified: 0 },
+    }),
+    ["factCheck lists no claims"]
+  );
+});
+
+test("posts before the fact-check standard do not need one", () => {
+  assert.deepEqual(postStandardViolations(complete), []);
+});
+
+test("proseWordCount ignores frontmatter, comments and code blocks", () => {
+  const text = [
+    "---",
+    'title: "Five words in the title"',
+    "---",
+    "<!-- DRAFT NOTES one two three -->",
+    "One two three.",
+    "```sh",
+    "echo four five six",
+    "```",
+    "Four `inline` five.",
+  ].join("\n");
+  assert.equal(proseWordCount(text), 6);
+});
+
+test("posts since the word limit stay within the limit", async () => {
+  const offenders: string[] = [];
+  for (const locale of ["en", "vi"]) {
+    const dir = new URL(`../src/content/posts/${locale}/`, import.meta.url);
+    for (const name of await readdir(dir).catch(() => [])) {
+      const text = await readFile(new URL(name, dir), "utf8");
+      const pub = /^pubDatetime:\s*"?([^"\n]+)"?\s*$/m.exec(text)?.[1];
+      if (!pub || new Date(pub) < WORD_LIMIT_SINCE) continue;
+      const words = proseWordCount(text);
+      if (words > MAX_PROSE_WORDS) offenders.push(`${locale}/${name}: ${words}`);
     }
   }
   assert.deepEqual(offenders, []);

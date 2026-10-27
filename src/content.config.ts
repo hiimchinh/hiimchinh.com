@@ -35,6 +35,10 @@ const posts = defineCollection({
         readerCheck: z
           .object({ date, full: z.number(), total: z.number() })
           .optional(),
+        /** Every claim checked against its private source (AGENTS.md). */
+        factCheck: z
+          .object({ date, claims: z.number(), verified: z.number() })
+          .optional(),
       })
       .superRefine((post, ctx) => {
         for (const message of postStandardViolations(post)) {
