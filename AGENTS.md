@@ -64,16 +64,16 @@ A draft reaches the owner only after gates 0–4 pass. Record each result.
 0. **Proof.** Write only ideas with `proof` ≥ 4: real numbers, outputs or a
    mistake from the owner's own work. Otherwise pick another idea.
 1. **Evidence.** List every factual claim (number, output, date, behaviour,
-   quote) in the private ledger `blog-ideas/claims/<slug>.md`, each with its
-   source and, for a count or a measurement, the exact command that
-   reproduces it and the time window ("as of 27 October 2026 13:40 +07"). The
-   post states the same window. Then a fresh subagent on a different model
-   from the writer audits blind: it gets only the post and the list of places
-   to look (notes, repositories, transcripts), finds each source itself and
-   reruns the commands, then marks each claim VERIFIED, UNSUPPORTED or WRONG.
-   The writer's verdicts are not shown to it. Fix or cut until every claim is
-   VERIFIED. Record `factCheck` (`date`, `claims`, `verified`) from the audit;
-   the build fails otherwise.
+   quote) in the private ledger `blog-ideas/claims/<slug>/ledger.md`, each
+   with its source and, for a count or a measurement, the script and exact
+   command that reproduce it (kept in the same folder) and the time window
+   ("as of 27 October 2026 13:40 +07"). The post states the same window. Then
+   a fresh subagent on a different model from the writer audits: it gets the
+   post, the sources and the commands, but not the writer's verdicts. It must
+   open each source and rerun each command; "not recomputed" is UNSUPPORTED.
+   It marks each claim VERIFIED, UNSUPPORTED or WRONG. Fix or cut until every
+   claim is VERIFIED. Record `factCheck` (`date`, `claims`, `verified`) from
+   the audit; the build fails otherwise.
 2. **Privacy.** No customer, company, product, server host name, internal
    price or secret. `tests/restricted-references.test.ts` checks names; the
    writer checks the rest.
@@ -117,8 +117,8 @@ post moves.
    from the owner or from verified sources; never invent numbers. Notes for the
    owner go in an HTML comment starting with `DRAFT NOTES`.
 4. **Open a PR.** CI comments a preview link where the draft is visible.
-5. **Run the AI-reader check.** Spawn a fresh subagent (a small model is
-   enough) whose only source is the preview Markdown,
+5. **Run the AI-reader check.** Spawn a fresh subagent whose only source is the preview Markdown (use `sonnet`: `haiku` graded the
+   same text 3/4 and 4/4 on different runs),
    `https://pr-<n>-hiimchinh-com.ch-nh.workers.dev/posts/<slug>.md`. It answers
    each `readerQuestions` entry and grades it FULL (a quoted sentence answers
    the whole question), PARTIAL or NONE. Fix the post and re-run with a new
