@@ -7,6 +7,11 @@
  */
 export const STANDARD_SINCE = new Date("2026-10-14T00:00:00+07:00");
 export const MIN_READER_QUESTIONS = 3;
+/** Posts from this date also need every claim checked against its source. */
+export const FACT_CHECK_SINCE = new Date("2026-10-28T00:00:00+07:00");
+/** Owner requirement 27/10/2026: short and to the point. */
+export const WORD_LIMIT_SINCE = FACT_CHECK_SINCE;
+export const MAX_PROSE_WORDS = 600;
 
 export type PostStandardFields = {
   draft?: boolean;
@@ -14,6 +19,7 @@ export type PostStandardFields = {
   audience?: string;
   readerQuestions?: string[];
   readerCheck?: { date: Date; full: number; total: number };
+  factCheck?: { date: Date; claims: number; verified: number };
 };
 
 /** Human-readable reasons a post may not be published yet; empty when it may. */
@@ -41,7 +47,36 @@ export function postStandardViolations(post: PostStandardFields): string[] {
       `readerCheck covers ${check.total} questions but the post lists ${questions.length}`
     );
   }
+  if (post.pubDatetime >= FACT_CHECK_SINCE) {
+    violations.push(...factCheckViolations(post.factCheck));
+  }
   return violations;
+}
+
+function factCheckViolations(check: PostStandardFields["factCheck"]): string[] {
+  if (!check) return ["factCheck is missing"];
+  if (check.claims < 1) return ["factCheck lists no claims"];
+  if (check.verified < check.claims) {
+    return [
+      `factCheck verified ${check.verified}/${check.claims} claims; every claim must be`,
+    ];
+  }
+  return [];
+}
+
+/** The prose of a post: no frontmatter, HTML comments or fenced code. */
+export function stripNonProse(text: string): string {
+  return text
+    .replace(/^---\r?\n[\s\S]*?\r?\n---\r?\n/, "")
+    .replace(/<!--[\s\S]*?-->/g, "")
+    .replace(/^ {0,3}(`{3,}|~{3,})[\s\S]*?^ {0,3}\1[^\S\r\n]*$/gm, "");
+}
+
+/** Words a reader reads: no frontmatter, HTML comments or fenced code. */
+export function proseWordCount(text: string): number {
+  return stripNonProse(text)
+    .split(/\s+/)
+    .filter(word => /[\p{L}\p{N}]/u.test(word)).length;
 }
 
 /** Notes for the author that must be removed before publishing. */
