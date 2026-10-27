@@ -14,7 +14,7 @@
     "format:check": "prettier --check .",
     "format": "prettier --write .",
     "lint": "eslint .",
-    "test": "node --test tests/toc.test.ts tests/locale-posts.test.ts tests/restricted-references.test.ts tests/llm-links.test.ts tests/seo.test.ts tests/post-visibility.test.ts tests/post-standards.test.ts tests/edit-ratio.test.ts",
+    "test": "node --test tests/toc.test.ts tests/locale-posts.test.ts tests/restricted-references.test.ts tests/llm-links.test.ts tests/seo.test.ts tests/post-visibility.test.ts tests/post-standards.test.ts tests/edit-ratio.test.ts tests/slop-phrases.test.ts",
     "test:build": "node --test tests/build-output.test.ts",
     "test:preview": "node --test tests/preview-output.test.ts",
     "new-post": "node scripts/new-post.mjs",
