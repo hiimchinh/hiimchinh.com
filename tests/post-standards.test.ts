@@ -157,11 +157,17 @@ test("posts since the word limit stay within the limit", async () => {
     const dir = new URL(`../src/content/posts/${locale}/`, import.meta.url);
     for (const name of await readdir(dir).catch(() => [])) {
       const text = await readFile(new URL(name, dir), "utf8");
-      const pub = /^pubDatetime:\s*"?([^"\n]+)"?\s*$/m.exec(text)?.[1];
+      const pub = /^pubDatetime:\s*["']?([^"'\n#]+?)["']?\s*(?:#.*)?$/m.exec(text)?.[1];
       if (!pub || new Date(pub) < WORD_LIMIT_SINCE) continue;
       const words = proseWordCount(text);
       if (words > MAX_PROSE_WORDS) offenders.push(`${locale}/${name}: ${words}`);
     }
   }
   assert.deepEqual(offenders, []);
+});
+
+test("proseWordCount strips ~~~ fences, indented fences and CRLF frontmatter", () => {
+  assert.equal(proseWordCount("A b.\n~~~\none two three\n~~~\n"), 2);
+  assert.equal(proseWordCount("A b.\n  ```\none two three\n  ```\n"), 2);
+  assert.equal(proseWordCount("---\r\ntitle: a\r\n---\r\nOne two."), 2);
 });

@@ -37,7 +37,11 @@ const posts = defineCollection({
           .optional(),
         /** Every claim checked against its private source (AGENTS.md). */
         factCheck: z
-          .object({ date, claims: z.number(), verified: z.number() })
+          .object({
+            date,
+            claims: z.number().int().min(0),
+            verified: z.number().int().min(0),
+          })
           .optional(),
       })
       .superRefine((post, ctx) => {

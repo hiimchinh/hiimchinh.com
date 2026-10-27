@@ -5,11 +5,10 @@
 // Usage: node scripts/edit-ratio.mjs <draft.md> <published.md>
 import { readFileSync } from "node:fs";
 import { pathToFileURL } from "node:url";
+import { stripNonProse } from "../src/utils/post-standards.ts";
 
 function proseWords(text) {
-  return text
-    .replace(/^---\n[\s\S]*?\n---\n/, "")
-    .replace(/<!--[\s\S]*?-->/g, "")
+  return stripNonProse(text)
     .split(/\s+/)
     .filter(Boolean);
 }

@@ -19,3 +19,8 @@ test("frontmatter and draft notes do not count as edits", () => {
   const published = '---\ntitle: "x"\n---\na b';
   assert.equal(editRatio(draft, published), 0);
 });
+
+test("CRLF frontmatter and code blocks do not count as edits", () => {
+  assert.equal(editRatio("---\r\nx: 1\r\n---\r\na b", "a b"), 0);
+  assert.equal(editRatio("a b\n```\nold\n```", "a b\n```\nnew\n```"), 0);
+});

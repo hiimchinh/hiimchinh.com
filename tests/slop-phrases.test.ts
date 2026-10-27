@@ -31,11 +31,18 @@ test("posts since the word limit use none of the stock AI phrases", async () => 
     const dir = new URL(`../src/content/posts/${locale}/`, import.meta.url);
     for (const name of await readdir(dir).catch(() => [])) {
       const text = await readFile(new URL(name, dir), "utf8");
-      const pub = /^pubDatetime:\s*"?([^"\n]+)"?\s*$/m.exec(text)?.[1];
+      const pub = /^pubDatetime:\s*["']?([^"'\n#]+?)["']?\s*(?:#.*)?$/m.exec(text)?.[1];
       if (!pub || new Date(pub) < WORD_LIMIT_SINCE) continue;
       const hits = slopHits(text);
       if (hits.length) offenders.push(`${locale}/${name}: ${hits.join(", ")}`);
     }
   }
   assert.deepEqual(offenders, []);
+});
+
+test("inline code and ordinary technical phrases are not slop", () => {
+  assert.deepEqual(
+    slopHits("Run `delve` to debug. In today's run the world of 3 tools held."),
+    []
+  );
 });

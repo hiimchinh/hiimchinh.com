@@ -64,13 +64,19 @@ function factCheckViolations(check: PostStandardFields["factCheck"]): string[] {
   return [];
 }
 
+/** The prose of a post: no frontmatter, HTML comments or fenced code. */
+export function stripNonProse(text: string): string {
+  return text
+    .replace(/^---\r?\n[\s\S]*?\r?\n---\r?\n/, "")
+    .replace(/<!--[\s\S]*?-->/g, "")
+    .replace(/^ {0,3}(`{3,}|~{3,})[\s\S]*?^ {0,3}\1[^\S\r\n]*$/gm, "");
+}
+
 /** Words a reader reads: no frontmatter, HTML comments or fenced code. */
 export function proseWordCount(text: string): number {
-  const body = text
-    .replace(/^---\n[\s\S]*?\n---\n/, "")
-    .replace(/<!--[\s\S]*?-->/g, "")
-    .replace(/^```[\s\S]*?^```/gm, "");
-  return body.split(/\s+/).filter(word => /[\p{L}\p{N}]/u.test(word)).length;
+  return stripNonProse(text)
+    .split(/\s+/)
+    .filter(word => /[\p{L}\p{N}]/u.test(word)).length;
 }
 
 /** Notes for the author that must be removed before publishing. */
