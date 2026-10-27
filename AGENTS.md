@@ -68,6 +68,50 @@ post moves.
 7. **Publish** after the owner approves: remove `draft: true` and the
    `DRAFT NOTES` comment, merge.
 
+## Daily cadence: the agent writes, the owner approves
+
+Owner decision 27 October 2026: one post a day, written by an agent and
+reviewed and edited by the owner. The owner's review time is the binding
+constraint, so every draft must reach the owner ready to publish. A scheduled
+job runs the steps below every morning (06:30 Asia/Ho_Chi_Minh).
+
+1. **Publish what the owner approved.** An open post PR is approved when the
+   owner approved it on GitHub, moved it to "Ready" in `/admin/` (label
+   `sveltia-cms/pending_publish`), or said so in chat. Remove `draft: true` and
+   the `DRAFT NOTES` comment. If the owner changed the text after the last
+   `readerCheck`, run the AI-reader check again. Merge when CI is green. Set
+   the idea to `status: published`.
+2. **Apply the owner's comments** on the other open post PRs, then re-run the
+   AI-reader check.
+3. **Harvest ideas.** Read the second-brain notes added or changed in the last
+   day under `HC/incidents`, `HC/knowledge` and `HC/runbooks`. Add an idea to
+   `hiimchinh/blog-ideas` only when it fits an approved series and passes the
+   Non-negotiables. Lessons from client work are `client-only`. Business,
+   money, contract and customer notes are never ideas.
+4. **Stop if the owner is behind.** When 2 or more post PRs wait for the
+   owner, write nothing new. The report says which drafts wait.
+5. **Write one post** from the highest-priority idea, following "Writing a
+   post". Shape: one task, 400–900 words, real commands and real output, a
+   mistake or a surprise from the owner's own work. Open the PR from branch
+   `cms/posts/<slug>` with label `sveltia-cms/pending_review`, so the draft also
+   appears in `/admin/` for editing in the browser.
+6. **Report** in Vietnamese, at most 120 words: the preview link of each draft
+   that waits, the claims the owner must confirm, what was published.
+
+Rules for daily drafts:
+
+- The repository, its PRs and the preview link are public. `DRAFT NOTES` lists
+  the claims to confirm, never a private note path, a host name of the owner's
+  servers, a customer or a company name. Sources go in the idea's `sources`
+  field in the private inbox.
+- Write in English. A Vietnamese translation is not part of the daily job.
+- Never invent a number, an output or an experience. When the notes do not
+  have the real output, reproduce it in a throwaway container or drop the
+  idea for that day.
+- Weekly, on Sunday, also report: posts published in the last 7 days, open
+  drafts, days each draft waited, and Search Console clicks and impressions
+  when that access works.
+
 ## Non-negotiables
 
 1. **Work shown here is Stringee and Cogover only.** Never name Chinh's own
