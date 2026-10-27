@@ -65,11 +65,15 @@ A draft reaches the owner only after gates 0–4 pass. Record each result.
    mistake from the owner's own work. Otherwise pick another idea.
 1. **Evidence.** List every factual claim (number, output, date, behaviour,
    quote) in the private ledger `blog-ideas/claims/<slug>.md`, each with its
-   source: note path, commit, command transcript in `/tmp` or the inbox, or a
-   URL. A fresh subagent on a different model from the writer reads the post,
-   the ledger and the sources, and marks each claim VERIFIED, UNSUPPORTED or
-   WRONG. Fix or cut until every claim is VERIFIED. Record `factCheck`
-   (`date`, `claims`, `verified`); the build fails otherwise.
+   source and, for a count or a measurement, the exact command that
+   reproduces it and the time window ("as of 27 October 2026 13:40 +07"). The
+   post states the same window. Then a fresh subagent on a different model
+   from the writer audits blind: it gets only the post and the list of places
+   to look (notes, repositories, transcripts), finds each source itself and
+   reruns the commands, then marks each claim VERIFIED, UNSUPPORTED or WRONG.
+   The writer's verdicts are not shown to it. Fix or cut until every claim is
+   VERIFIED. Record `factCheck` (`date`, `claims`, `verified`) from the audit;
+   the build fails otherwise.
 2. **Privacy.** No customer, company, product, server host name, internal
    price or secret. `tests/restricted-references.test.ts` checks names; the
    writer checks the rest.
