@@ -15,7 +15,7 @@ readerCheck:
   full: 4
   total: 4
 factCheck:
-  date: 2026-10-27
+  date: 2026-10-28
   claims: 32
   verified: 32
 ---
