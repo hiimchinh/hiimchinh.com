@@ -1,8 +1,7 @@
 ---
 title: "How to check that PHP is really patched for PHP2Shell when the version number does not change"
 description: "A backported PHP2Shell fix keeps the old PHP version, so php -v proves nothing. Grep the binary for a string only the fix adds, then check that no running PHP process still uses the old, deleted binary."
-pubDatetime: 2026-10-28T10:30:00+07:00
-draft: true
+pubDatetime: 2026-10-28T10:51:00+07:00
 tags: ["php", "security", "linux"]
 audience: "Sysadmins who run PHP 7.4, 8.0 or 8.1 from a distro, a backport repository or their own build, and must prove the PHP2Shell fix is in the binary that serves requests"
 readerQuestions:
@@ -13,7 +12,7 @@ readerQuestions:
   - "My PHP runs in Docker containers based on the official php:7.4 image. What do I do?"
   - "The check finds the fix marker. Does that mean my server is no longer vulnerable?"
 readerCheck:
-  date: 2026-10-23
+  date: 2026-10-28
   full: 6
   total: 6
 factCheck:
