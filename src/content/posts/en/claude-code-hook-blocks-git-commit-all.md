@@ -1,8 +1,7 @@
 ---
 title: "How to make Claude Code follow a rule: a PreToolUse hook that refused git commit -a 40 times"
 description: "A 30-line PreToolUse hook refuses git commit -a and names the safe command. From 15 to 26 October 2026 agents tried it 40 times; the hook refused all 40, and 36 times the agent's next command staged named files."
-pubDatetime: 2026-10-28T10:30:00+07:00
-draft: true
+pubDatetime: 2026-10-28T10:51:00+07:00
 tags: ["claude-code", "ai-agents", "git"]
 audience: "Developers who use Claude Code or another coding agent every day and keep repeating the same instructions"
 readerQuestions:
@@ -11,7 +10,7 @@ readerQuestions:
   - "Which rules should be a hook and which can stay as text?"
   - "How do I check that my hook actually blocks?"
 readerCheck:
-  date: 2026-10-27
+  date: 2026-10-28
   full: 4
   total: 4
 factCheck:
@@ -19,10 +18,6 @@ factCheck:
   claims: 32
   verified: 32
 ---
-
-<!-- DRAFT NOTES
-Owner approved publishing in chat on 28 October 2026; he reads it after it is live.
--->
 
 From 15 to 26 October 2026, my coding agents tried `git commit -a` 40 times, and a 30-line hook refused all 40. In 36 of those cases the agent's next command was `git add` with only its own files.
 
@@ -38,7 +33,7 @@ I run several agent sessions in one checkout. On 14 October at 22:12, one of the
 
 ## Why a text rule did not stop it
 
-At 22:16 a memory note told agents to stage only their own files. Agents still ran `git commit -a` twice before the hook existed. From 1 October to the hook, 58 such commands ran; none was refused.
+At 22:16 a memory note told agents to stage only their own files. After the note, agents still ran `git commit -a` twice before the hook existed. From 1 October to the hook, 58 such commands ran; none was refused.
 
 Claude Code's docs say why: Claude treats CLAUDE.md "as context, not enforced configuration". A hook runs before the command and can refuse it. Make a rule a hook when a script can decide it from the command alone.
 
@@ -111,7 +106,7 @@ An allowed command prints nothing. Then ask a new session to run `git commit -am
 
 ## What happened after
 
-- Refused: 40 of 40 tries, 15 October 09:43 to 26 October 24:00 (+07).
+- Refused: 40 of 40 tries, 15 October 09:43 to 27 October 00:00 (+07).
 - Next command: 36 times `git add <files>`, 4 times `git status`.
 - Cost: 0.02 seconds per call in five timed runs.
 
