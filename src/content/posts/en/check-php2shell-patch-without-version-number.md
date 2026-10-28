@@ -36,10 +36,10 @@ The output below comes from a throwaway Ubuntu 22.04 container with `php8.1-fpm`
 
 ## 1. Check the binary for the fix marker
 
-| Fix | Marker strings |
-| --- | --- |
-| Full fix (8.2.35 and newer) | `memory_hard_limit_percent` and `Hard memory limit of %zu bytes exhausted` |
-| EOL backport for 7.4, 8.0, 8.1 ([7.4 commit](https://github.com/php/php-src/commit/712e60f9edfd03f0960fc4fc3c2c375f42b90aa2); 8.0 and 8.1 have matching ones) | `zend_mm_safe_error_ex` or `Fatal error: %s in %s on line %d` |
+| Fix                                                                                                                                                           | Marker strings                                                             |
+| ------------------------------------------------------------------------------------------------------------------------------------------------------------- | -------------------------------------------------------------------------- |
+| Full fix (8.2.35 and newer)                                                                                                                                   | `memory_hard_limit_percent` and `Hard memory limit of %zu bytes exhausted` |
+| EOL backport for 7.4, 8.0, 8.1 ([7.4 commit](https://github.com/php/php-src/commit/712e60f9edfd03f0960fc4fc3c2c375f42b90aa2); 8.0 and 8.1 have matching ones) | `zend_mm_safe_error_ex` or `Fatal error: %s in %s on line %d`              |
 
 Save this as `check-php-binary.sh`:
 
