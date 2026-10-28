@@ -35,7 +35,7 @@ The output below comes from a throwaway Ubuntu 22.04 container with `php8.1-fpm`
 | Fix | Marker strings |
 | --- | --- |
 | Full fix (8.2.35 and newer) | `memory_hard_limit_percent` and `Hard memory limit of %zu bytes exhausted` |
-| EOL backport for 7.4, 8.0, 8.1 ([php-src commit](https://github.com/php/php-src/commit/712e60f9edfd03f0960fc4fc3c2c375f42b90aa2)) | `zend_mm_safe_error_ex` or `Fatal error: %s in %s on line %d` |
+| EOL backport for 7.4, 8.0, 8.1 ([7.4 commit](https://github.com/php/php-src/commit/712e60f9edfd03f0960fc4fc3c2c375f42b90aa2); 8.0 and 8.1 have matching ones) | `zend_mm_safe_error_ex` or `Fatal error: %s in %s on line %d` |
 
 Save this as `check-php-binary.sh`:
 
@@ -54,7 +54,7 @@ else
 fi
 ```
 
-Run it on the binary your website uses (`php-fpm*`, Apache's `libphp*.so`, `lsphp`), not the CLI. They come from different packages.
+Run it on the binary your website uses (`php-fpm*` or Apache's `libphp*.so`), not the CLI. They come from different packages.
 
 Before the fix:
 
@@ -142,11 +142,11 @@ PID 13077 comm=php-fpm8.1 ns=host
   exe: /usr/sbin/php-fpm8.1  markers=eol-backport
 ```
 
-No `(deleted)`, and every process has the marker. For Apache with mod_php, run `systemctl restart apache2`; whether a graceful reload loads the new `libphp` was not tested. Then check again.
+No `(deleted)`, and every process has the marker. For Apache with mod_php, run `systemctl restart apache2`. In a test, `apachectl graceful` kept the old, deleted `libphp`. Then check again.
 
 ## Docker images
 
-The official [docker-library/php](https://github.com/docker-library/php) images for 7.4, 8.0 and 8.1 build PHP from source and are no longer maintained, so `apt upgrade` cannot fix them. Move to `php:8.2-fpm` or newer, rebuild, recreate the container, and run `check-php-procs.sh` on the Docker host. It also sees processes inside containers (`ns=other-mnt-ns`).
+The official [docker-library/php](https://github.com/docker-library/php) images for 7.4, 8.0 and 8.1 build PHP from source and are no longer maintained, so `apt upgrade` cannot fix them. Move to `php:8.2-fpm` or newer, rebuild, recreate the container, and run `check-php-procs.sh` on the Docker host. It also sees processes inside containers (`ns=other-mnt-ns(container?)`).
 
 ## What a marker does not prove
 
