@@ -16,6 +16,10 @@ readerCheck:
   date: 2026-10-23
   full: 6
   total: 6
+factCheck:
+  date: 2026-10-28
+  claims: 36
+  verified: 36
 ---
 
 A backported PHP2Shell fix keeps the old PHP version, so `php -v` cannot tell you if you are safe. Grep the binary for a string only the fix adds, then check that no running PHP process still uses the old, deleted binary.
