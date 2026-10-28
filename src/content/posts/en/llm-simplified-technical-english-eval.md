@@ -3,6 +3,10 @@ title: "Does a Simplified Technical English prompt make LLM output shorter? Five
 description: "Asking Claude Sonnet to write 80% of the way to ASD-STE100 cut words per sentence from 12.0 to 8.5 over five runs each. It did not shorten the answers: 328 prose words against 312. One earlier run had shown 20% fewer."
 pubDatetime: 2026-10-29T07:00:00+07:00
 draft: true
+factCheck:
+  date: 2026-10-29
+  claims: 26
+  verified: 26
 tags: ["llm", "prompting", "evals"]
 audience: "Engineers who have an LLM or agent write runbooks, handoffs or reports for people and want them easier to read"
 readerQuestions:
@@ -23,8 +27,8 @@ A single run on 4 October 2026 had shown 20% fewer words, 296 against 370. I mad
 
 ## Does this apply to you?
 
-- **An LLM writes English text that a person acts on** (runbooks, handoffs, checklists): yes.
-- **You write in another language:** the sentence rules carry over, but the STE dictionary is English only. Nothing here was tested in another language.
+- **An LLM writes English explanations for people:** yes, with a limit: one topic on one model was tested.
+- **You write in another language:** nothing here was tested in another language.
 - **You want shorter output:** this instruction did not deliver it in these runs.
 
 ## The test
@@ -53,7 +57,7 @@ DETAILS = {  # concrete facts a correct answer to the prompt should contain
     "23:59:59 warning": r"23:59:59",
     "bare date = UTC midnight": r"UTC midnight|00:00 UTC|07:00",
     "index / WHERE warning": r"\bindex",
-    "SQL example": r"\bSELECT\b|\bWHERE\b.*[<>]=?",
+    "SQL example": r"(?-i:\bSELECT\b|\bWHERE\b.*[<>]=?)",  # case-sensitive: prose "select" is not SQL
 }
 
 FENCE = re.compile(r"^[ \t]*```.*?^[ \t]*```[^\n]*$", re.S | re.M)  # fences may be indented in lists
@@ -102,6 +106,8 @@ The STE prompt produced more sentences, not fewer words.
 
 ## What the single run got wrong
 
-On 4 October the STE answer also dropped the SQL example, so the counter finds 5 of 6 facts in it. In the ten new runs every answer had all six. One STE run kept 2 lines of code where the others had 6.
+On 4 October neither answer had an SQL example, so both score 5 of 6. A first version of the counter matched the word "select" in the plain answer's prose and scored it 6 of 6. That made the STE answer look as if it had lost detail. The `(?-i:…)` group now makes the SQL check case-sensitive.
 
-One sample showed two effects, shorter text and lost detail, that five samples did not repeat. Only shorter sentences held. Five runs per prompt cost 2 minutes; run them before a single result becomes a rule.
+In the ten new runs every answer had all six facts. One STE run kept 2 lines of code where the others had 6.
+
+The single run showed shorter text; five runs did not repeat it. Only shorter sentences held. Five runs per prompt cost 2 minutes; run them before a single result becomes a rule.
