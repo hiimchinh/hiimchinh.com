@@ -28,7 +28,7 @@ A single run on 4 October 2026 had shown 20% fewer words, 296 against 370. I mad
 ## Does this apply to you?
 
 - **An LLM writes English explanations for people:** yes, with a limit: one topic on one model was tested.
-- **You write in another language:** nothing here was tested in another language.
+- **You write in another language:** unknown. Nothing here was tested in another language, so run the five-run test below with your own prompt first.
 - **You want shorter output:** this instruction did not deliver it in these runs.
 
 ## The test
@@ -43,7 +43,7 @@ Each prompt ran five times with `claude -p --model sonnet --tools ""` in Claude 
 
 ## How to check: count it
 
-The script counts prose only. It removes fenced code, and a sentence ends at `.`, `!` or `?` before a capital letter or backtick, or at a line break. It also checks for six facts a correct answer needs.
+The script counts prose only, skipping fenced code, and checks for six facts a correct answer needs. Change `DETAILS` to the facts of your own topic.
 
 ````python
 #!/usr/bin/env python3
@@ -102,12 +102,11 @@ outputs/ste-5.txt	prose words 325	sentences 38	avg 8.6	max 23	>20w 1	code lines 
 | Sentences over 20 words, mean | 2.4                   | 0.2                 |
 | Facts found, of 6             | 6 in every run        | 6 in every run      |
 
-The STE prompt produced more sentences, not fewer words.
 
 ## What the single run got wrong
 
 On 4 October neither answer had an SQL example, so both score 5 of 6. A first version of the counter matched the word "select" in the plain answer's prose and scored it 6 of 6. That made the STE answer look as if it had lost detail. The `(?-i:…)` group now makes the SQL check case-sensitive.
 
-In the ten new runs every answer had all six facts. One STE run kept 2 lines of code where the others had 6.
+In the ten new runs, one STE answer kept 2 lines of code where the others had 6.
 
-The single run showed shorter text; five runs did not repeat it. Only shorter sentences held. Five runs per prompt cost 2 minutes; run them before a single result becomes a rule.
+Ten runs took 2 minutes. Run them before a single result becomes a rule.
