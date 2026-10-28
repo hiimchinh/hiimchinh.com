@@ -3,6 +3,10 @@ title: "Does a Simplified Technical English prompt make LLM output shorter? Five
 description: "Asking Claude Sonnet to write 80% of the way to ASD-STE100 cut words per sentence from 12.0 to 8.5 over five runs each. It did not shorten the answers: 328 prose words against 312. One earlier run had shown 20% fewer."
 pubDatetime: 2026-10-29T07:00:00+07:00
 draft: true
+readerCheck:
+  date: 2026-10-29
+  full: 5
+  total: 5
 factCheck:
   date: 2026-10-29
   claims: 26
