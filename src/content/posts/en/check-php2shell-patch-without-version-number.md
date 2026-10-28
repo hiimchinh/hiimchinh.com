@@ -19,8 +19,7 @@ readerCheck:
 ---
 
 <!-- DRAFT NOTES
-- Output in this post is real, from 23 October 2026: a throwaway ubuntu:22.04 container (--cap-add SYS_PTRACE) with php8.1-fpm 8.1.2-1ubuntu2 upgraded to 8.1.2-1ubuntu2.28. Transcript: plans/reports/evidence-261023-1753-php2shell-ubuntu-jammy-before-after-transcript.txt in the workspace. Marker results for Docker php:8.4.26/8.4.27, Ubuntu 24.04 php8.3 and sury php7.4 come from the research run the same day.
-- Research reports: plans/reports/research-261023-1643-php2shell-verify-method-and-scale.md, research-261023-1643-php2shell-vendor-patch-status.md.
+- Output in this post is real, from 23 October 2026: a throwaway ubuntu:22.04 container (--cap-add SYS_PTRACE) with php8.1-fpm 8.1.2-1ubuntu2 upgraded to 8.1.2-1ubuntu2.28. Marker results for Docker php:8.4.26/8.4.27, Ubuntu 24.04 php8.3 and sury php7.4 come from the research run the same day.
 - Not tested: Apache mod_php reload, LiteSpeed, FrankenPHP static, Windows, RPM changelogs.
 - Owner: confirm the first-person wording ("I ran") is fine.
 -->
