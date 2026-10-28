@@ -102,7 +102,6 @@ outputs/ste-5.txt	prose words 325	sentences 38	avg 8.6	max 23	>20w 1	code lines 
 | Sentences over 20 words, mean | 2.4                   | 0.2                 |
 | Facts found, of 6             | 6 in every run        | 6 in every run      |
 
-
 ## What the single run got wrong
 
 On 4 October neither answer had an SQL example, so both score 5 of 6. A first version of the counter matched the word "select" in the plain answer's prose and scored it 6 of 6. That made the STE answer look as if it had lost detail. The `(?-i:…)` group now makes the SQL check case-sensitive.
