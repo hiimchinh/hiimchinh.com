@@ -3,6 +3,10 @@ title: "How a dotfiles auto-commit deleted three of my coding agents' rules, and
 description: "On 23 September 2026 a 15-minute auto-commit pushed a stale copy of my agents' rule folder: 3 of 28 rules deleted, 12 rolled back. A guard now runs before every auto-commit; a replay of the failure prints BLOCKED and exits 1."
 pubDatetime: 2026-10-30T07:00:00+07:00
 draft: true
+readerCheck:
+  date: 2026-10-30
+  full: 5
+  total: 5
 factCheck:
   date: 2026-10-30
   claims: 32
