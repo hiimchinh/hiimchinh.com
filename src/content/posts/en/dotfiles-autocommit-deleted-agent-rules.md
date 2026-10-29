@@ -3,6 +3,10 @@ title: "How a dotfiles auto-commit deleted three of my coding agents' rules, and
 description: "On 23 September 2026 a 15-minute auto-commit pushed a stale copy of my agents' rule folder: 3 of 28 rules deleted, 12 rolled back. A guard now runs before every auto-commit; a replay of the failure prints BLOCKED and exits 1."
 pubDatetime: 2026-10-30T07:00:00+07:00
 draft: true
+factCheck:
+  date: 2026-10-30
+  claims: 32
+  verified: 32
 tags: ["ai-agents", "git", "dotfiles"]
 audience: "Developers who keep their coding agents' rules (CLAUDE.md, AGENTS.md, rule files) in a dotfiles repo that a job commits and pushes automatically"
 readerQuestions:
@@ -23,11 +27,11 @@ On 23 September 2026 at 01:20, a 15-minute auto-commit job pushed a stale copy o
 
 - **A timer commits and pushes the repo that holds your agent rules:** yes.
 - **You use chezmoi with `git.autoCommit = true`:** yes, read the root cause first.
-- **You commit your dotfiles by hand:** less so. You see the diff before the commit; the guard still catches copies you miss.
+- **You commit your dotfiles by hand:** less so. You see the diff before the commit, and the guard runs only if you call it yourself.
 
 ## The setup
 
-My agents read their global rules from `~/.agents/rules`, a symlink into my chezmoi source repo. A timer ran every 15 minutes: `chezmoi re-add`, commit, push. Every machine pulls that repo and regenerates each agent's rule files from it.
+My agents read their global rules from `~/.agents/rules`. `~/.agents` is a symlink into my chezmoi source repo. A timer ran every 15 minutes: `chezmoi re-add`, commit, push. Every machine pulls that repo and regenerates each agent's rule files from it.
 
 ## Timeline (+07, from git log and the incident note of that night)
 
@@ -45,10 +49,10 @@ My first guard sat after `re-add`, so it never saw the change. Testing it at 01:
 
 ## The guardrail
 
-1. `autoCommit = false` and `autoPush = false`, committed at 01:52. The sync script is now the only commit path.
+1. `autoCommit = false` and `autoPush = false`, committed at 01:52. The sync script is now the only automatic commit path.
 2. The guard runs after `git add -A` and before the commit. It blocks a deleted or renamed file under protected paths, more than 15 changed files, a modified file whose mtime is older than its last commit, a file that shrank below half, secret-looking names and backup files.
 
-The mtime check catches copies. `rsync -a`, a restore or a cloud sync keeps the old mtime; a real edit has a new one.
+The mtime check catches copies. `rsync -a`, `rclone` or a restore keeps the old mtime; a real edit has a new one.
 
 ```bash
 while IFS=$'\t' read -r st path newpath; do
