@@ -79,7 +79,7 @@ while IFS=$'\t' read -r st path newpath; do
 
 ## How to check it blocks
 
-Replay the failure in a throwaway repo: commit three rules, then `rsync -a --delete` an older copy over them with an August mtime and one rule missing. Save the guard as `guard.sh` next to this script.
+Replay the failure in a throwaway repo: commit three rules, then `rsync -a --delete` an older copy over them with an August mtime and one rule missing. Save the [full guard](/code/dotfiles-autocommit-deleted-agent-rules/guard.sh) (67 lines) as `guard.sh` next to this script.
 
 ```bash
 #!/usr/bin/env bash
