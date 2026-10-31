@@ -77,11 +77,8 @@ A draft reaches the owner only after gates 0–4 pass. Record each result.
    The ledger table's last column holds the status, `VERIFIED` or `OWNER`.
    Write `factCheck` with
    `node scripts/fact-check-count.mjs <ledger.md> <post.md>`, never by hand;
-   the build fails unless `verified + owner = claims`. A post with OWNER
-   claims publishes only after the owner confirms them: CI ("Owner approval")
-   fails until the owner's account approves the pull request's head commit.
-   When the owner confirms in chat, record it with
-   `GITHUB_AS_OWNER=1 gh pr review <pr> --approve --body "<his words>"`.
+   the build fails unless `verified + owner = claims`. The owner must
+   confirm every OWNER claim before he approves the post.
 2. **Privacy.** No customer, company, product, server host name, internal
    price or secret. `tests/restricted-references.test.ts` checks names; the
    writer checks the rest.
@@ -133,7 +130,11 @@ post moves.
    subagent until every question is FULL.
 6. **Record the result** in `readerCheck` (`date`, `full`, `total`).
 7. **Publish** after the owner approves: remove `draft: true` and the
-   `DRAFT NOTES` comment, merge.
+   `DRAFT NOTES` comment, merge. CI ("Owner approval") fails on any pull
+   request that publishes a post or changes a published one until the owner's
+   account approves its head commit, unless the owner opened it. When the
+   owner approves in chat or in `/admin/`, record it after the last commit
+   with `GITHUB_AS_OWNER=1 gh pr review <pr> --approve --body "<his words>"`.
 
 ## Daily cadence: the agent writes, the owner approves
 

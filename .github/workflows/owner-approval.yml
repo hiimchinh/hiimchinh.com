@@ -1,7 +1,7 @@
 name: Owner approval
 
-# A post whose factCheck counts owner-confirmed claims publishes only after
-# the owner approves the pull request's head commit (scripts/owner-approval.mjs).
+# A post publishes only after the owner approves the pull request's head
+# commit, unless he opened it (scripts/owner-approval.mjs).
 on:
   pull_request:
     types: [opened, synchronize, reopened]
@@ -18,7 +18,7 @@ concurrency:
 
 jobs:
   owner-approval:
-    name: Owner approval for owner-confirmed claims
+    name: Owner approval for published posts
     runs-on: ubuntu-latest
     timeout-minutes: 2
     steps:
@@ -35,3 +35,4 @@ jobs:
           REPO: ${{ github.repository }}
           HEAD_SHA: ${{ github.event.pull_request.head.sha }}
           OWNER: ${{ github.repository_owner }}
+          AUTHOR: ${{ github.event.pull_request.user.login }}
