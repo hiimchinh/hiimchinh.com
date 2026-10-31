@@ -1,16 +1,15 @@
 ---
 title: "Does a Simplified Technical English prompt make LLM output shorter? Five runs each"
 description: "Asking Claude Sonnet to write 80% of the way to ASD-STE100 cut words per sentence from 12.0 to 8.5 over five runs each. It did not shorten the answers: 328 prose words against 312. One earlier run had shown 20% fewer."
-pubDatetime: 2026-10-29T07:00:00+07:00
-draft: true
+pubDatetime: 2026-10-31T23:20:00+07:00
 readerCheck:
   date: 2026-10-29
   full: 5
   total: 5
 factCheck:
-  date: 2026-10-29
-  claims: 26
-  verified: 26
+  date: 2026-10-31
+  claims: 11
+  verified: 11
 tags: ["llm", "prompting", "evals"]
 audience: "Engineers who have an LLM or agent write runbooks, handoffs or reports for people and want them easier to read"
 readerQuestions:
@@ -20,10 +19,6 @@ readerQuestions:
   - "Does this apply to me if I write in a language other than English?"
   - "How do I check whether a style prompt worked on my own outputs?"
 ---
-
-<!-- DRAFT NOTES
-Claims to confirm: on 4 October 2026 you adopted the STE style for runbooks and handoffs after one test run.
--->
 
 Asking Claude Sonnet to write "about 80% of the way to ASD-STE100" cut the average sentence from 12.0 to 8.5 words over five runs per prompt. It did not make the answers shorter: they averaged 328 prose words against 312 without the instruction.
 
