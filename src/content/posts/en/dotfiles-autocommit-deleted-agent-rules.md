@@ -8,9 +8,10 @@ readerCheck:
   full: 5
   total: 5
 factCheck:
-  date: 2026-10-30
-  claims: 32
-  verified: 31
+  date: 2026-10-31
+  claims: 15
+  verified: 14
+  owner: 1
 tags: ["ai-agents", "git", "dotfiles"]
 audience: "Developers who keep their coding agents' rules (CLAUDE.md, AGENTS.md, rule files) in a dotfiles repo that a job commits and pushes automatically"
 readerQuestions:
