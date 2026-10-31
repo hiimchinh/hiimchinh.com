@@ -72,8 +72,16 @@ A draft reaches the owner only after gates 0–4 pass. Record each result.
    post, the sources and the commands, but not the writer's verdicts. It must
    open each source and rerun each command; "not recomputed" is UNSUPPORTED.
    It marks each claim VERIFIED, UNSUPPORTED or WRONG. Fix or cut until every
-   claim is VERIFIED. Record `factCheck` (`date`, `claims`, `verified`) from
-   the audit; the build fails otherwise.
+   claim is VERIFIED, except a claim whose only source is the owner (his
+   memory, a log on his own machine, a note that retells it): mark it OWNER.
+   The ledger table's last column holds the status, `VERIFIED` or `OWNER`.
+   Write `factCheck` with
+   `node scripts/fact-check-count.mjs <ledger.md> <post.md>`, never by hand;
+   the build fails unless `verified + owner = claims`. A post with OWNER
+   claims publishes only after the owner confirms them: CI ("Owner approval")
+   fails until the owner's account approves the pull request's head commit.
+   When the owner confirms in chat, record it with
+   `GITHUB_AS_OWNER=1 gh pr review <pr> --approve --body "<his words>"`.
 2. **Privacy.** No customer, company, product, server host name, internal
    price or secret. `tests/restricted-references.test.ts` checks names; the
    writer checks the rest.
@@ -138,7 +146,8 @@ job runs the steps below every morning (06:30 Asia/Ho_Chi_Minh).
    owner approved it on GitHub, moved it to "Ready" in `/admin/` (label
    `sveltia-cms/pending_publish`), or said so in chat. Remove `draft: true` and
    the `DRAFT NOTES` comment. If the owner changed the text after the last
-   `readerCheck`, run the AI-reader check again. Merge when CI is green. Set
+   `readerCheck`, run the AI-reader check again. Merge when every check,
+   including "Owner approval", is green (`gh pr checks <pr>`). Set
    the idea to `status: published`.
 2. **Apply the owner's comments** on the other open post PRs, then re-run the
    AI-reader check.

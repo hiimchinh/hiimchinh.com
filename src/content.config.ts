@@ -41,6 +41,8 @@ const posts = defineCollection({
             date,
             claims: z.number().int().min(0),
             verified: z.number().int().min(0),
+            /** Claims only the owner can vouch for (owner-approval.ts). */
+            owner: z.number().int().min(0).optional(),
           })
           .optional(),
       })
