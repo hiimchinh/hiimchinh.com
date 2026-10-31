@@ -19,7 +19,13 @@ export type PostStandardFields = {
   audience?: string;
   readerQuestions?: string[];
   readerCheck?: { date: Date; full: number; total: number };
-  factCheck?: { date: Date; claims: number; verified: number };
+  /** `owner`: claims only the owner can vouch for; see owner-approval.ts. */
+  factCheck?: {
+    date: Date;
+    claims: number;
+    verified: number;
+    owner?: number;
+  };
 };
 
 /** Human-readable reasons a post may not be published yet; empty when it may. */
@@ -56,9 +62,11 @@ export function postStandardViolations(post: PostStandardFields): string[] {
 function factCheckViolations(check: PostStandardFields["factCheck"]): string[] {
   if (!check) return ["factCheck is missing"];
   if (check.claims < 1) return ["factCheck lists no claims"];
-  if (check.verified < check.claims) {
+  const owner = check.owner ?? 0;
+  if (check.verified + owner < check.claims) {
+    const by = owner ? ` and the owner ${owner}` : "";
     return [
-      `factCheck verified ${check.verified}/${check.claims} claims; every claim must be`,
+      `factCheck verified ${check.verified}${by}/${check.claims} claims; every claim must be`,
     ];
   }
   return [];
