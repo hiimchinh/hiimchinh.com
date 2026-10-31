@@ -1,0 +1,87 @@
+/**
+ * A pull request that publishes a post, or changes a published one, needs the
+ * owner's approving review on its head commit, unless the owner opened it.
+ * CI enforces it with scripts/owner-approval.mjs. Claims only the owner can
+ * vouch for (his memory, a log on his own machine) are counted in
+ * `factCheck.owner` and named in the message. The flow is in AGENTS.md.
+ */
+import { FACT_CHECK_SINCE } from "./post-standards.ts";
+
+export type LedgerCount = {
+  claims: number;
+  verified: number;
+  owner: number;
+  /** Claim numbers whose last cell is neither VERIFIED nor OWNER. */
+  invalid: number[];
+};
+
+/** Counts the claim rows (`| <n> | … | <status> |`) of a private ledger. */
+export function countLedgerClaims(ledger: string): LedgerCount {
+  const count: LedgerCount = { claims: 0, verified: 0, owner: 0, invalid: [] };
+  for (const line of ledger.split(/\r?\n/)) {
+    const row = line.match(/^\|\s*(\d+)\s*\|(.*)\|\s*$/);
+    if (!row) continue;
+    count.claims++;
+    const status = row[2].split("|").pop()?.trim();
+    if (status === "VERIFIED") count.verified++;
+    else if (status === "OWNER") count.owner++;
+    else count.invalid.push(Number(row[1]));
+  }
+  return count;
+}
+
+function frontmatter(text: string): string {
+  return text.match(/^---\r?\n([\s\S]*?)\r?\n---/)?.[1] ?? "";
+}
+
+/** True for a post that is not a draft and falls under the fact-check standard. */
+export function publishesPost(text: string): boolean {
+  const fm = frontmatter(text);
+  if (/^draft:\s*true\s*$/m.test(fm)) return false;
+  const published = fm.match(/^pubDatetime:\s*["']?([^"'\s]+)/m)?.[1];
+  return (
+    Boolean(published) && new Date(published as string) >= FACT_CHECK_SINCE
+  );
+}
+
+/** `factCheck.owner` of a post that publishes, else 0. */
+export function ownerClaimsIn(text: string): number {
+  if (!publishesPost(text)) return 0;
+  const block =
+    frontmatter(text).match(/^factCheck:\s*\r?\n((?:[ \t]+.*\r?\n?)*)/m)?.[1] ??
+    "";
+  return Number(block.match(/^\s+owner:\s*(\d+)/m)?.[1] ?? 0);
+}
+
+export type Review = { login: string; state: string; commit: string };
+
+/** Why the pull request may not merge yet, or null when it may. */
+export function ownerApprovalVerdict(input: {
+  posts: { file: string; published: boolean; owner: number }[];
+  reviews: Review[];
+  headSha: string;
+  owner: string;
+  /** Login of the pull request's author; the owner's own PR needs no review. */
+  author: string;
+}): string | null {
+  const pending = input.posts.filter(post => post.published);
+  if (pending.length === 0 || input.author === input.owner) return null;
+  const approved = input.reviews.some(
+    review =>
+      review.login === input.owner &&
+      review.state === "APPROVED" &&
+      review.commit === input.headSha
+  );
+  if (approved) return null;
+  const files = pending
+    .map(p =>
+      p.owner ? `${p.file} (${p.owner} owner-confirmed claims)` : p.file
+    )
+    .join(", ");
+  return (
+    `Publishes ${files}: this pull request needs an approving ` +
+    `review by ${input.owner} on commit ${input.headSha.slice(0, 7)}. After the ` +
+    `owner confirms in chat, run: GITHUB_AS_OWNER=1 gh pr review <pr> --approve ` +
+    `--body "<the owner's words>"`
+  );
+}

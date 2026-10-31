@@ -72,8 +72,13 @@ A draft reaches the owner only after gates 0–4 pass. Record each result.
    post, the sources and the commands, but not the writer's verdicts. It must
    open each source and rerun each command; "not recomputed" is UNSUPPORTED.
    It marks each claim VERIFIED, UNSUPPORTED or WRONG. Fix or cut until every
-   claim is VERIFIED. Record `factCheck` (`date`, `claims`, `verified`) from
-   the audit; the build fails otherwise.
+   claim is VERIFIED, except a claim whose only source is the owner (his
+   memory, a log on his own machine, a note that retells it): mark it OWNER.
+   The ledger table's last column holds the status, `VERIFIED` or `OWNER`.
+   Write `factCheck` with
+   `node scripts/fact-check-count.mjs <ledger.md> <post.md>`, never by hand;
+   the build fails unless `verified + owner = claims`. The owner must
+   confirm every OWNER claim before he approves the post.
 2. **Privacy.** No customer, company, product, server host name, internal
    price or secret. `tests/restricted-references.test.ts` checks names; the
    writer checks the rest.
@@ -125,7 +130,11 @@ post moves.
    subagent until every question is FULL.
 6. **Record the result** in `readerCheck` (`date`, `full`, `total`).
 7. **Publish** after the owner approves: remove `draft: true` and the
-   `DRAFT NOTES` comment, merge.
+   `DRAFT NOTES` comment, merge. CI ("Owner approval") fails on any pull
+   request that publishes a post or changes a published one until the owner's
+   account approves its head commit, unless the owner opened it. When the
+   owner approves in chat or in `/admin/`, record it after the last commit
+   with `GITHUB_AS_OWNER=1 gh pr review <pr> --approve --body "<his words>"`.
 
 ## Daily cadence: the agent writes, the owner approves
 
@@ -138,7 +147,8 @@ job runs the steps below every morning (06:30 Asia/Ho_Chi_Minh).
    owner approved it on GitHub, moved it to "Ready" in `/admin/` (label
    `sveltia-cms/pending_publish`), or said so in chat. Remove `draft: true` and
    the `DRAFT NOTES` comment. If the owner changed the text after the last
-   `readerCheck`, run the AI-reader check again. Merge when CI is green. Set
+   `readerCheck`, run the AI-reader check again. Merge when every check,
+   including "Owner approval", is green (`gh pr checks <pr>`). Set
    the idea to `status: published`.
 2. **Apply the owner's comments** on the other open post PRs, then re-run the
    AI-reader check.
