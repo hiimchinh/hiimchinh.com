@@ -5,6 +5,7 @@ import {
   countLedgerClaims,
   ownerApprovalVerdict,
   ownerClaimsIn,
+  publishesPost,
 } from "../src/utils/owner-approval.ts";
 
 const HEAD = "99e5142aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa";
@@ -79,11 +80,12 @@ test("a draft or a post without owner claims needs no owner approval", () => {
   assert.equal(ownerClaimsIn(post("factCheck:\n  claims: 3\n  verified: 3\n")), 0);
 });
 
-const needs = [{ file: "src/content/posts/en/x.md", owner: 1 }];
+const needs = [{ file: "src/content/posts/en/x.md", published: true, owner: 1 }];
+const AGENT = "app/hclabs-agent";
 
 test("owner claims and no review: blocked", () => {
   assert.match(
-    ownerApprovalVerdict({ posts: needs, reviews: [], headSha: HEAD, owner: "hiimchinh" }) ?? "",
+    ownerApprovalVerdict({ posts: needs, reviews: [], headSha: HEAD, owner: "hiimchinh", author: AGENT }) ?? "",
     /needs an approving review by hiimchinh/
   );
 });
@@ -91,7 +93,7 @@ test("owner claims and no review: blocked", () => {
 test("an approval by the agent App does not count", () => {
   const reviews = [{ login: "hclabs-agent[bot]", state: "APPROVED", commit: HEAD }];
   assert.notEqual(
-    ownerApprovalVerdict({ posts: needs, reviews, headSha: HEAD, owner: "hiimchinh" }),
+    ownerApprovalVerdict({ posts: needs, reviews, headSha: HEAD, owner: "hiimchinh", author: AGENT }),
     null
   );
 });
@@ -99,7 +101,7 @@ test("an approval by the agent App does not count", () => {
 test("an owner approval of an older commit does not count", () => {
   const reviews = [{ login: "hiimchinh", state: "APPROVED", commit: OLD }];
   assert.notEqual(
-    ownerApprovalVerdict({ posts: needs, reviews, headSha: HEAD, owner: "hiimchinh" }),
+    ownerApprovalVerdict({ posts: needs, reviews, headSha: HEAD, owner: "hiimchinh", author: AGENT }),
     null
   );
 });
@@ -107,14 +109,55 @@ test("an owner approval of an older commit does not count", () => {
 test("the owner's approval of the head commit passes", () => {
   const reviews = [{ login: "hiimchinh", state: "APPROVED", commit: HEAD }];
   assert.equal(
-    ownerApprovalVerdict({ posts: needs, reviews, headSha: HEAD, owner: "hiimchinh" }),
+    ownerApprovalVerdict({ posts: needs, reviews, headSha: HEAD, owner: "hiimchinh", author: AGENT }),
     null
   );
 });
 
-test("no post with owner claims: passes without a review", () => {
+test("a pull request that publishes no post passes without a review", () => {
   assert.equal(
-    ownerApprovalVerdict({ posts: [], reviews: [], headSha: HEAD, owner: "hiimchinh" }),
+    ownerApprovalVerdict({
+      posts: [{ file: "src/content/posts/en/d.md", published: false, owner: 0 }],
+      reviews: [],
+      headSha: HEAD,
+      owner: "hiimchinh",
+      author: AGENT,
+    }),
     null
+  );
+});
+
+test("a published post without owner claims still needs the owner's approval", () => {
+  assert.match(
+    ownerApprovalVerdict({
+      posts: [{ file: "src/content/posts/en/p.md", published: true, owner: 0 }],
+      reviews: [],
+      headSha: HEAD,
+      owner: "hiimchinh",
+      author: AGENT,
+    }) ?? "",
+    /needs an approving review by hiimchinh/
+  );
+});
+
+test("a pull request the owner opened himself passes", () => {
+  assert.equal(
+    ownerApprovalVerdict({
+      posts: needs,
+      reviews: [],
+      headSha: HEAD,
+      owner: "hiimchinh",
+      author: "hiimchinh",
+    }),
+    null
+  );
+});
+
+test("publishesPost: a published post under the standard, not a draft or an old post", () => {
+  assert.equal(publishesPost(post("")), true);
+  assert.equal(publishesPost(post("draft: true\n")), false);
+  assert.equal(
+    publishesPost("---\ntitle: x\npubDatetime: 2026-10-01T06:30:00+07:00\n---\n"),
+    false
   );
 });
