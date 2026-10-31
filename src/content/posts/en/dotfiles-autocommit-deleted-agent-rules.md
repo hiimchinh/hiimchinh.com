@@ -1,8 +1,7 @@
 ---
 title: "How a dotfiles auto-commit deleted three of my coding agents' rules, and the guard that blocks it now"
 description: "On 23 September 2026 a 15-minute auto-commit pushed a stale copy of my agents' rule folder: 3 of 28 rules deleted, 12 rolled back. A guard now runs before every auto-commit; a replay of the failure prints BLOCKED and exits 1."
-pubDatetime: 2026-10-30T07:00:00+07:00
-draft: true
+pubDatetime: 2026-10-31T23:25:00+07:00
 readerCheck:
   date: 2026-10-30
   full: 5
@@ -21,10 +20,6 @@ readerQuestions:
   - "Does this apply to me if I commit my dotfiles by hand?"
   - "How do I check that the guard actually blocks?"
 ---
-
-<!-- DRAFT NOTES
-Claims to confirm: on 23 September a sync script on your laptop mirrored its older ~/.agents to the server at about 01:18 (+07); the loss showed up at 01:23 while a new rule was being added.
--->
 
 On 23 September 2026 at 01:20, a 15-minute auto-commit job pushed a stale copy of my coding agents' rule folder: 3 of 28 rules deleted, 12 rolled back to older text. A guard now runs before every auto-commit and refuses that shape; a replay of the failure prints `BLOCKED` and exits 1.
 
