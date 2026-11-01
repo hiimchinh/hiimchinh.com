@@ -56,7 +56,7 @@ Until then I made every Cloudflare change by hand in the dashboard. On 27 Septem
 
 ## The trade-off
 
-The cost is attention: 23 approved actions with 13 distinct quotes in 35 days, all from 13 October on. Three risks remain. A token with near-full account rights sits on a shared build server. The hook matches command patterns; it is not a sandbox. The wrapper only checks that a quote exists, so it cannot tell my words from words the agent wrote.
+Is it safe? Safe enough for one person who reads the audit log; not a set-and-forget setup. The cost is attention: 23 approved actions with 13 distinct quotes in 35 days, all from 13 October on. Three risks remain. A token with near-full account rights sits on a shared build server. The hook matches command patterns; it is not a sandbox. The wrapper only checks that a quote exists, so it cannot tell my words from words the agent wrote.
 
 ## Check your own agent's log
 
