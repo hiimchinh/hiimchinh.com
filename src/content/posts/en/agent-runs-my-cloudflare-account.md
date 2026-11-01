@@ -13,9 +13,9 @@ readerQuestions:
   - "How do I check what my agent changed and which changes I approved?"
 factCheck:
   date: 2026-11-02
-  claims: 27
+  claims: 28
   verified: 22
-  owner: 5
+  owner: 6
 ---
 
 <!-- DRAFT NOTES
@@ -24,13 +24,14 @@ Claims to confirm (only you can):
 2. The three tokens are IP-locked to the build server, and the operations token holds every account permission except API tokens (read and write), billing and account settings write.
 3. The first wrapper put the token in curl's argv; all three token values were rolled on 28 Sep, 11:05-11:08, keeping ids, permissions and the IP lock.
 4. The IP lock first held only IPv4; calls failed with error 9109 until the IPv6 /64 was added.
+5. Until 27 Sep you made every Cloudflare change by hand in the dashboard.
 -->
 
 From 27 September to 1 November 2026, a coding agent ran 184 logged actions on my Cloudflare account: 48 OpenTofu applies and 136 raw API calls, 113 of them cache purges. 23 actions carried one of 13 distinct approval quotes; the other 161 needed none.
 
 ## Why I handed it over
 
-On 27 September a DNS record kept pointing at a server I had already moved away from, for hours. The agent had handed the DNS step to me, and nobody checked back. That evening I gave the agent account-wide tokens.
+Until then I made every Cloudflare change by hand in the dashboard. On 27 September a DNS record kept pointing at a server I had already moved away from, for hours. The agent had handed the DNS step to me, and nobody checked back. That evening I gave the agent account-wide tokens.
 
 ## Does this apply to you?
 
