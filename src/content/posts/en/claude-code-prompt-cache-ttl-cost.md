@@ -41,11 +41,11 @@ All dollars are API list-price equivalents, not what a subscription bills. The 4
 
 ## Results, 49 days
 
-| Change | Effect | Base |
-|---|---|---|
-| Main thread 1 h → 5 min | +48.3% | main-thread input-side cost |
-| Subagents 5 min → 1 h | −4.3% | subagent input-side cost |
-| Fresh worker instead of resuming one above 300k | −8.72% ($59/week) | all subagent spend |
+| Change                                          | Effect            | Base                        |
+| ----------------------------------------------- | ----------------- | --------------------------- |
+| Main thread 1 h → 5 min                         | +48.3%            | main-thread input-side cost |
+| Subagents 5 min → 1 h                           | −4.3%             | subagent input-side cost    |
+| Fresh worker instead of resuming one above 300k | −8.72% ($59/week) | all subagent spend          |
 
 Input-side cost is cache writes, cache reads and uncached input; output tokens are the same under any TTL.
 
