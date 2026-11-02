@@ -31,13 +31,13 @@ From 27 September to 1 November 2026, a coding agent ran 184 logged actions on m
 
 ## Why I handed it over
 
-Until then I made every Cloudflare change by hand in the dashboard. On 27 September a DNS record kept pointing at a server I had already moved away from, for hours. The agent had handed the DNS step to me, and nobody checked back. That evening I gave the agent account-wide tokens.
+Until then I made every Cloudflare change by hand. On 27 September a DNS record kept pointing at a server I had already moved away from, for hours. The agent had handed the DNS step to me, and nobody checked back. That evening I gave the agent account-wide tokens.
 
 ## Does this apply to you?
 
 - **One person, a few zones, an agent that already writes your infrastructure code:** yes.
 - **Several people share the account:** not as written. You need per-person audit and SSO first.
-- **You cannot pin a token to one machine's IP:** no. The IP lock carries much of the safety.
+- **You cannot pin a token to one machine's IP:** no; most of the safety rests on that lock.
 
 ## The guardrails
 
@@ -56,11 +56,11 @@ Until then I made every Cloudflare change by hand in the dashboard. On 27 Septem
 
 ## The trade-off
 
-Is it safe? Safe enough for one person who reads the audit log; not a set-and-forget setup. The cost is attention: 23 approved actions with 13 distinct quotes in 35 days, all from 13 October on. Three risks remain. A token with near-full account rights sits on a shared build server. The hook matches command patterns; it is not a sandbox. The wrapper only checks that a quote exists, so it cannot tell my words from words the agent wrote.
+Is it safe? Safe enough for one person who reads the audit log; not a set-and-forget setup. The cost is attention: 23 approved actions with 13 distinct quotes in 35 days, all from 13 October on. Risks remain: a token with near-full account rights sits on a shared build server. The hook matches command patterns; it is not a sandbox. The wrapper only checks that a quote exists, so it cannot tell my words from words the agent wrote.
 
 ## Check your own agent's log
 
-If your wrapper writes one JSON object per action, two `jq` lines show what it did and what claims approval. My log, as of 2 November 2026 06:36 +07:
+Over a JSON-lines log, two `jq` lines show what the agent did and what claims approval. My log, as of 2 November 2026 06:36 +07:
 
 ```console
 $ jq -r '.action // "apply"' cloudflare-applied.json | sort | uniq -c
@@ -70,4 +70,4 @@ $ jq -c 'select(.owner_approved)' cloudflare-applied.json | wc -l
 23
 ```
 
-Then read each approved line and match its quote to a message you actually sent.
+Then match each approved quote to a message you actually sent.
