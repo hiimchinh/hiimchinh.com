@@ -13,8 +13,8 @@ readerQuestions:
   - "How do I check which cache TTL my own Claude Code writes?"
 factCheck:
   date: 2026-11-03
-  claims: 24
-  verified: 24
+  claims: 25
+  verified: 25
 ---
 
 <!-- DRAFT NOTES
@@ -37,7 +37,7 @@ A script parses every transcript and prices each call at API list prices. Then i
 - **The other TTL.** A 5–60 minute pause after a 5-minute write turns a cache rebuild into a cache read under 1 hour, and the reverse.
 - **A fresh worker instead of a resume.** An idle worker above 300k context is priced as a new worker with a 100k re-read and a 5k brief.
 
-The 49-day replay, 3 September to 21 October 2026, ran in 22 seconds.
+All dollars are API list-price equivalents, not what a subscription bills. The 49-day replay, 3 September to 21 October 2026, ran in 22 seconds.
 
 ## Results, 49 days
 
@@ -49,7 +49,7 @@ The 49-day replay, 3 September to 21 October 2026, ran in 22 seconds.
 
 Input-side cost is cache writes, cache reads and uncached input; output tokens are the same under any TTL.
 
-Under a 5-minute TTL, every 5–60 minute pause between main-thread turns rebuilds the cache. The largest share was neither: calls above 400k context made 25.8% of main-thread spend and 37.9% of subagent spend over those 49 days, and 12.4% and 12.6% in the latest 14.
+Under a 5-minute TTL, every 5–60 minute pause between main-thread turns rebuilds the cache. Separately, calls above 400k context made 25.8% of main-thread spend and 37.9% of subagent spend over those 49 days, and 12.4% and 12.6% in the latest 14.
 
 ## What I changed
 
@@ -57,12 +57,12 @@ Under a 5-minute TTL, every 5–60 minute pause between main-thread turns rebuil
 2. **Added a pre-tool hook** that refuses `SendMessage` to a subagent above 300k context that has been idle for 60 seconds, so the agent spawns a fresh worker with a brief. A `[keep-context: <reason>]` tag overrides it.
 3. **Made the replay weekly:** a timer every Monday 07:30 prices the last 14 days and flags levers over their thresholds, such as TTL ≥5% and resume ≥3% of subagent spend, if they are also worth ≥$10/week.
 
-Before the hook, the 14-day window put the resume waste at 3.5% (about $19/week). In the 14 days to 3 November 06:33 +07, which start one day before the hook shipped on 21 October, it was 0.38% ($0.63/week). The TTL levers stay under threshold: 1 hour on subagents would cut their input-side cost 1.58%; 5 minutes on the main thread would raise its 19.39%.
+In the 14 days before the hook merged on 21 October, the resume waste was 3.49% ($19.47/week). In the 14 days to 3 November 06:33 +07, which start one day before the merge, it was 0.38% ($0.63/week). Neither TTL switch is worth it yet: 1 hour on subagents would cut their input-side cost 1.58%; 5 minutes on the main thread would raise its 19.39%.
 
 ## What went wrong
 
-- **The first analysis was wrong.** Over the 49 days it overcounted the injected resource-warning text and reported 2.5% of main-thread spend; the replay measures 0.63%. Code review caught it. Every cost number now comes from the script, not from a draft.
-- **Usage-limit hits did not stop.** The replay prices dollars, not limits: 33 limit hits in the last 14 days.
+- **The first analysis was wrong.** Over the 49 days it overcounted the injected resource-warning text and reported 2.5% of main-thread spend; the replay measures 0.63%. Code review caught it. Cost numbers now come only from the script.
+- **Usage-limit hits went up.** The replay prices dollars, not limits: 33 limit hits in the 14 days to 3 November, against 24 in the 14 days before the hook.
 
 ## The cost
 
