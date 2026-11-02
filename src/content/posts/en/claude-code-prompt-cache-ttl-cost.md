@@ -3,6 +3,10 @@ title: "Claude Code prompt cache: 1 hour or 5 minutes? A replay of 49 days of my
 description: "A replay of 49 days of my Claude Code transcripts at API prices: a 5-minute cache on the main thread raises its input-side cost 48.3%, a 1-hour cache on subagents cuts theirs 4.3%. Resuming idle 300k-context workers cost more; after a hook refused it, that share fell from 3.5% to 0.38% of subagent spend."
 pubDatetime: 2026-11-03T07:00:00+07:00
 draft: true
+readerCheck:
+  date: 2026-11-03
+  full: 5
+  total: 5
 tags: ["ai-agents", "claude-code", "cost", "prompt-caching"]
 audience: "Engineers running Claude Code with subagents every day who want to cut cost or usage-limit hits"
 readerQuestions:
