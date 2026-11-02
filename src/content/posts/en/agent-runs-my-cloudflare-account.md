@@ -3,6 +3,10 @@ title: "An AI agent ran my Cloudflare account for five weeks: 184 actions, 23 ap
 description: "From 27 September to 1 November 2026 a coding agent ran 184 logged actions on my Cloudflare account; 23 of them carried one of 13 distinct approval quotes. The guardrails, the audit log, and the token exposure that forced a roll."
 pubDatetime: 2026-11-02T07:00:00+07:00
 draft: true
+readerCheck:
+  date: 2026-11-02
+  full: 5
+  total: 5
 tags: ["ai-agents", "cloudflare", "opentofu", "security"]
 audience: "Engineers who let a coding agent change their DNS and Cloudflare settings and want guardrails that hold"
 readerQuestions:
