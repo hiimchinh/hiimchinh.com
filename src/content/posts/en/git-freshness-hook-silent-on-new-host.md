@@ -55,7 +55,7 @@ The defaults named the Mac's folders: repos in `~/Work`, the report in `~/Librar
 - `touch` skipped every path, because none started with `~/Work`.
 - The hook command ends in `2>/dev/null || true`, so nothing could surface.
 
-No report file ever existed on the server. I never checked for one.
+No report file ever existed on the server.
 
 ## Before and after
 
