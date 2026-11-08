@@ -13,8 +13,8 @@ readerQuestions:
   - "How do I check that my freshness hook actually ran?"
 factCheck:
   date: 2026-11-09
-  claims: 22
-  verified: 20
+  claims: 23
+  verified: 21
   owner: 2
 ---
 
@@ -45,7 +45,13 @@ The fix: two Claude Code hooks run one script, before every `git` command for th
   "command": "python3 ~/scripts/git-freshness.py --mode prime 2>/dev/null || true" }] }]
 ```
 
-A 15-minute stamp skips the network on repeat calls. The script only fetches and fast-forwards, with a refspec that has no `+`, so git refuses any update that is not a fast-forward and local commits stay.
+Per repo, the script runs one fetch:
+
+```bash
+git -C "$repo" fetch origin --prune --no-tags '+refs/heads/*:refs/remotes/origin/*' "main:main"
+```
+
+The second refspec has no `+`, so git refuses any update to `main` that is not a fast-forward and local commits stay. A 15-minute stamp skips the network on repeat calls.
 
 ## How it broke
 
