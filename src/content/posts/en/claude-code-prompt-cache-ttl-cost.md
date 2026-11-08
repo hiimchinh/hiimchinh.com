@@ -1,8 +1,7 @@
 ---
 title: "Claude Code prompt cache: 1 hour or 5 minutes? A replay of 49 days of my transcripts"
 description: "A replay of 49 days of my Claude Code transcripts at API prices: a 5-minute cache on the main thread raises its input-side cost 48.3%, a 1-hour cache on subagents cuts theirs 4.3%. Resuming idle 300k-context workers cost more; after a hook refused it, that share fell from 3.5% to 0.38% of subagent spend."
-pubDatetime: 2026-11-03T07:00:00+07:00
-draft: true
+pubDatetime: 2026-11-08T09:14:00+07:00
 readerCheck:
   date: 2026-11-03
   full: 5
@@ -20,11 +19,6 @@ factCheck:
   claims: 25
   verified: 25
 ---
-
-<!-- DRAFT NOTES
-No owner-only claims: every number comes from the replay script, its PR, or a command in the ledger.
-Dollars are API list-price equivalents, not what the subscription bills. Confirm you are fine publishing them.
--->
 
 Switching Claude Code's prompt cache TTL was not worth it either way: on 49 days of my transcripts, a 5-minute cache raises the main thread's input-side cost 48.3% and a 1-hour cache cuts the subagents' by 4.3%. Resuming idle workers above 300k context cost more; after a hook started refusing it, that waste fell from 3.5% to 0.38% of subagent spend.
 
