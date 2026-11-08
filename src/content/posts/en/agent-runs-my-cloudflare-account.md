@@ -1,8 +1,7 @@
 ---
 title: "An AI agent ran my Cloudflare account for five weeks: 184 actions, 23 approved by me"
 description: "From 27 September to 1 November 2026 a coding agent ran 184 logged actions on my Cloudflare account; 23 of them carried one of 13 distinct approval quotes. The guardrails, the audit log, and the token exposure that forced a roll."
-pubDatetime: 2026-11-02T07:00:00+07:00
-draft: true
+pubDatetime: 2026-11-08T09:13:00+07:00
 readerCheck:
   date: 2026-11-02
   full: 5
@@ -21,15 +20,6 @@ factCheck:
   verified: 22
   owner: 6
 ---
-
-<!-- DRAFT NOTES
-Claims to confirm (only you can):
-1. 27 Sep 2026: a DNS record kept pointing at the old server for hours after a move, because the DNS step was handed to you and nobody checked back.
-2. The three tokens are IP-locked to the build server, and the operations token holds every account permission except API tokens (read and write), billing and account settings write.
-3. The first wrapper put the token in curl's argv; all three token values were rolled on 28 Sep, 11:05-11:08, keeping ids, permissions and the IP lock.
-4. The IP lock first held only IPv4; calls failed with error 9109 until the IPv6 /64 was added.
-5. Until 27 Sep you made every Cloudflare change by hand in the dashboard.
--->
 
 From 27 September to 1 November 2026, a coding agent ran 184 logged actions on my Cloudflare account: 48 OpenTofu applies and 136 raw API calls, 113 of them cache purges. 23 actions carried one of 13 distinct approval quotes; the other 161 needed none.
 
