@@ -13,8 +13,8 @@ readerQuestions:
   - "How do I check that my freshness hook actually ran?"
 factCheck:
   date: 2026-11-09
-  claims: 21
-  verified: 19
+  claims: 22
+  verified: 20
   owner: 2
 ---
 
@@ -26,14 +26,24 @@ Claims to confirm (only you can):
 
 My git freshness hook, which fetches before my coding agents read git state, returned 0 on every call for at least 55 days and refreshed nothing. On 9 November 2026, 29 of the 47 local default branches on my build server were behind `origin`; after one run of the fixed hook, 19 were.
 
+## Does this apply to you?
+
+- **Agents on a second machine, a server or a container** with a different home layout: yes. Check that the hook's report exists there.
+- **Agents only on the laptop where you wrote and tested the hook:** the path bug does not; the silent `|| true` lesson still does.
+- **No hooks at all:** compare against `origin/<branch>` after a `git fetch`, never against a local `main`.
+
 ## Why the hook exists
 
 On 20 August 2026 an agent told me a branch was pushed but had no pull request. It had merged through two PRs, on 17 and 19 August. The local `main` was 75 commits behind `origin/main`, so `git log main..branch` showed 70 commits that looked unmerged.
 
-The fix was two Claude Code hooks running one script:
+The fix: two Claude Code hooks run one script, before every `git` command for that repo and at session start for all repos. The two entries in `~/.claude/settings.json` (path shortened, other keys removed):
 
-- **Before every `git` command** (`PreToolUse`, `Bash(git *)`), fetch that repo and fast-forward its default branch.
-- **At session start** (`SessionStart`, async), do the same for every repo under the work folder.
+```json
+"PreToolUse": [{ "matcher": "Bash", "hooks": [{ "type": "command", "if": "Bash(git *)", "timeout": 25,
+  "command": "python3 ~/scripts/git-freshness.py --mode touch 2>/dev/null || true" }] }],
+"SessionStart": [{ "hooks": [{ "type": "command", "async": true,
+  "command": "python3 ~/scripts/git-freshness.py --mode prime 2>/dev/null || true" }] }]
+```
 
 A 15-minute stamp skips the network on repeat calls. The script only fetches and fast-forwards, with a refspec that has no `+`, so git refuses any update that is not a fast-forward and local commits stay.
 
@@ -49,7 +59,7 @@ No report file ever existed on the server. I never checked for one.
 
 ## Before and after
 
-I measured with a script that fetches each repo and counts how far the local default branch is behind `origin`:
+A script fetched each repo and counted how far its local default branch was behind `origin`:
 
 |                              | Default branches behind origin |
 | ---------------------------- | ------------------------------ |
@@ -68,13 +78,15 @@ Git will not fast-forward a branch that is checked out. Those repos stay behind 
 2. Off macOS, the cache and report move to `~/.cache` and `~/.local/state`.
 3. When no repo root exists, `prime` writes the error into the report and exits 1, so a later reader sees it even when stderr is discarded.
 
-Two tests reproduce the failure: one runs with only the default `HOME` and asserts a fast-forward and a report under `~/.local/state`; one runs with an empty `HOME` and asserts exit 1 and the error text.
+Two tests reproduce the failure, one per case.
 
 ## The cost
 
 A cold `touch` on my infrastructure repo took 1.34 s; the next two calls took 0.09 s and 0.07 s from the stamp. A repeat `prime` over all repos took 12.6 s, in the background at session start.
 
 ## Check your own hook
+
+My output at 06:37:
 
 ```console
 $ ls -l ~/.local/state/git-freshness/git-freshness.json
@@ -88,6 +100,6 @@ $ jq -r '.error // empty, (.repos[] | .action)' ~/.local/state/git-freshness/git
       2 up-to-date
 ```
 
-One entry moved from `fast-forwarded` to `skipped-fresh` when a later `touch` on that repo rewrote it.
+A later `touch` rewrote one entry as `skipped-fresh`.
 
 No file, or a file older than your last session, means the hook is not running, whatever its exit code says.
