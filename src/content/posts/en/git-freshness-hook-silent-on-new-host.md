@@ -3,6 +3,10 @@ title: "My agents' git freshness hook did nothing for at least 55 days after I m
 description: "A hook that fetches before my coding agents read git state returned 0 on every call for at least 55 days, because it looked for ~/Work on a Linux server that keeps repos in ~/work. On 9 November 2026, 29 of 47 local default branches were behind origin; after one run of the fixed hook, 19 were."
 pubDatetime: 2026-11-09T07:00:00+07:00
 draft: true
+readerCheck:
+  date: 2026-11-09
+  full: 5
+  total: 5
 tags: ["ai-agents", "claude-code", "git", "hooks"]
 audience: "Engineers who run coding agents on a server and rely on hooks to keep the agents' git view current"
 readerQuestions:
