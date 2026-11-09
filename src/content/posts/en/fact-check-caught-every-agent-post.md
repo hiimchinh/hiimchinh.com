@@ -14,8 +14,8 @@ readerQuestions:
   - "How do I check that every claim in a post was verified before it ships?"
 factCheck:
   date: 2026-11-10
-  claims: 19
-  verified: 16
+  claims: 23
+  verified: 20
   owner: 3
 ---
 
@@ -29,7 +29,7 @@ My agent drafts the posts on this blog, and a second model checks every claim be
 
 ## Does this apply to you?
 
-- **An agent drafts text from your logs or data:** yes. You need a claims file and a second model.
+- **An agent drafts text from your logs or data:** yes.
 - **The agent writes code:** tests already do most of this job; this post covers prose.
 - **Opinion pieces with no numbers:** no. The audit needs a source to open.
 
@@ -37,10 +37,25 @@ My agent drafts the posts on this blog, and a second model checks every claim be
 
 On 27 October I decided my agent would write a post a day and I would review and edit it. The same day the fact-check became part of the build, for posts from 28 October:
 
-1. The writing agent lists every factual claim in a private ledger, with its source and, for a number, the script and command that reproduce it.
+1. The writing agent lists every factual claim in a private ledger, with its source and, for a number, the command that reproduces it. A row from this post's ledger:
+
+   ```markdown
+   | 3 | 12 of 119 claims unsupported or wrong | `python3 count-audits.py` TOTAL line | VERIFIED |
+   ```
+
 2. A fresh subagent on a different model from the writer gets the post, the sources and the commands, but not the writer's verdicts. It must open each source and rerun each command, then mark each claim VERIFIED, UNSUPPORTED or WRONG.
 3. The writer fixes or cuts until every claim is VERIFIED. A claim only I can vouch for is marked OWNER, and I confirm it before I approve.
-4. The build fails unless verified plus owner-confirmed claims equal the claim count in the post's `factCheck` frontmatter.
+4. A script writes the ledger's counts into the post's frontmatter, never by hand, and the build fails when `verified + owner < claims`. This post's block:
+
+   ```yaml
+   factCheck:
+     date: 2026-11-10
+     claims: 23
+     verified: 20
+     owner: 3
+   ```
+
+The full rules are gate 1 in this site's [AGENTS.md](https://github.com/hiimchinh/hiimchinh.com/blob/main/AGENTS.md).
 
 ## First-audit results
 
@@ -52,7 +67,7 @@ On 27 October I decided my agent would write a post a day and I would review and
 | [dotfiles auto-commit](/posts/dotfiles-autocommit-deleted-agent-rules/) | 32      | 2           | 1     |
 | **Total**                                                               | **119** | **8**       | **4** |
 
-The first audits of the other 3 posts list what they rewrote instead of counts: 4, 5 and 2 items.
+The other 3 first audits list rewritten items instead of counts: 4, 5 and 2. After the fixes, all 7 shipped with every claim verified or owner-confirmed.
 
 ## What it caught
 
@@ -62,15 +77,19 @@ The first audits of the other 3 posts list what they rewrote instead of counts: 
 
 ## One pass is not enough
 
-4 posts got a further check after the fixes, and each one changed something more: the CI runner count on the incident day, the wording of approvals, a "largest share" claim, an "applies to you" line wider than the test. That is 13 audit runs for 7 posts.
+4 posts got a further check after the fixes, and each one changed something more: the CI runner count on the incident day, the wording of approvals, a "largest share" claim, an "applies to you" line wider than the test.
+
+## The cost
+
+13 audit runs for 7 posts. The audit of this post took 99 seconds and about 136,000 subagent tokens.
 
 ## What it does not catch
 
-The audit checks facts, not voice. On 27 October I rejected a full draft as obviously AI-written; no claims check catches that. And 10 claims across 3 posts are OWNER: they rest on my word or my own notes, and the auditor cannot rerun me.
+The audit checks facts, not voice. On 27 October I rejected a full draft as obviously AI-written; no claims check catches that. And 10 claims across 3 posts are OWNER: they rest on my word or my own notes.
 
 ## Check your own pipeline
 
-My ledgers record each audit. A script reads them:
+A script reads the audit lines in my ledgers:
 
 ```console
 $ python3 count-audits.py | tail -1
