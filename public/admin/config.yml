@@ -79,6 +79,12 @@ collections:
         required: false
         i18n: true
         hint: Who the post is for, in one line.
+      - name: stance
+        label: My stance
+        widget: string
+        required: false
+        i18n: true
+        hint: The one position of mine this post argues. Say the same sentence in the text.
       - name: readerQuestions
         label: Reader questions
         widget: list

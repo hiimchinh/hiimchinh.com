@@ -46,3 +46,28 @@ test("inline code and ordinary technical phrases are not slop", () => {
     []
   );
 });
+
+test("the 'not X, it's Y' frame is slop", () => {
+  assert.deepEqual(slopHits("It's not a bug, it's a missing default."), [
+    "it's not X, it's Y",
+  ]);
+  assert.deepEqual(slopHits("The hook is not just a check, but a contract."), [
+    "not just X, but Y",
+  ]);
+});
+
+test("a plain negation is not the frame", () => {
+  assert.deepEqual(slopHits("It's not on the server. The report never existed."), []);
+});
+
+test("analysis tails and copula dodges are slop", () => {
+  assert.deepEqual(
+    slopHits("The hook serves as a gate, highlighting the risk."),
+    ["serves as", ", highlighting"]
+  );
+});
+
+test("two or more em dashes in prose are slop; one is allowed", () => {
+  assert.deepEqual(slopHits("One — two."), []);
+  assert.deepEqual(slopHits("One — two — three."), ["em dash x2"]);
+});

@@ -3,10 +3,12 @@ import { readFile, readdir } from "node:fs/promises";
 import test from "node:test";
 import {
   MAX_PROSE_WORDS,
+  STANCE_SINCE,
   WORD_LIMIT_SINCE,
   hasDraftNotes,
   postStandardViolations,
   proseWordCount,
+  stanceInProse,
 } from "../src/utils/post-standards.ts";
 
 const complete = {
@@ -170,4 +172,48 @@ test("proseWordCount strips ~~~ fences, indented fences and CRLF frontmatter", (
   assert.equal(proseWordCount("A b.\n~~~\none two three\n~~~\n"), 2);
   assert.equal(proseWordCount("A b.\n  ```\none two three\n  ```\n"), 2);
   assert.equal(proseWordCount("---\r\ntitle: a\r\n---\r\nOne two."), 2);
+});
+
+const withStance = {
+  ...factChecked,
+  pubDatetime: new Date("2026-11-10T07:00:00+07:00"),
+  stance: "A guardrail that cannot fail loudly is decoration.",
+};
+
+test("a post since the stance standard passes with the owner's stance", () => {
+  assert.deepEqual(postStandardViolations(withStance), []);
+});
+
+test("a post since the stance standard must state the owner's stance", () => {
+  assert.deepEqual(
+    postStandardViolations({ ...withStance, stance: " " }),
+    ["stance is missing"]
+  );
+});
+
+test("posts before the stance standard do not need one", () => {
+  assert.deepEqual(postStandardViolations(factChecked), []);
+});
+
+test("stanceInProse finds the stance in prose, not in comments or code", () => {
+  const stance = "Hooks beat rules.";
+  assert.equal(stanceInProse("---\nstance: x\n---\nIntro. Hooks beat rules.\n", stance), true);
+  assert.equal(stanceInProse("Intro.\n<!-- Hooks beat rules. -->\n", stance), false);
+  assert.equal(stanceInProse("Intro.\n```\nHooks beat rules.\n```\n", stance), false);
+});
+
+test("every post since the stance standard says its stance in the text", async () => {
+  const offenders: string[] = [];
+  for (const locale of ["en", "vi"]) {
+    const dir = new URL(`../src/content/posts/${locale}/`, import.meta.url);
+    for (const name of await readdir(dir).catch(() => [])) {
+      const text = await readFile(new URL(name, dir), "utf8");
+      const front = text.split(/^---\s*$/m)[1] ?? "";
+      const pub = /^pubDatetime:\s*["']?([^"'\n#]+?)["']?\s*(?:#.*)?$/m.exec(front)?.[1];
+      if (!pub || new Date(pub) < STANCE_SINCE) continue;
+      const stance = /^stance:\s*["']?(.+?)["']?\s*$/m.exec(front)?.[1] ?? "";
+      if (!stance || !stanceInProse(text, stance)) offenders.push(`${locale}/${name}`);
+    }
+  }
+  assert.deepEqual(offenders, []);
 });
