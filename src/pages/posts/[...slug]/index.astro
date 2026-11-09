@@ -41,6 +41,7 @@ const {
   timezone,
   tags,
   hideEditPost,
+  factCheck,
 } = post.data;
 
 const { Content, headings } = await render(post);
@@ -173,6 +174,12 @@ const ogImage = ogImageUrl
     >
       <Content />
     </article>
+
+    {
+      factCheck && (
+        <p class="mt-8 text-sm italic opacity-80">{t.post.agentDrafted}</p>
+      )
+    }
 
     <hr class="my-8 border-dashed" />
 

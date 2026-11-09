@@ -27,6 +27,8 @@ export default {
     rawMarkdown: "Markdown",
     copyForLlm: "Copy cho LLM",
     contents: "Mục lục",
+    agentDrafted:
+      "Agent của tôi viết nháp bài này từ log và ghi chú của tôi. Mọi claim đều được đối chiếu với nguồn, và tôi đã duyệt.",
     copiedForLlm: "Đã copy",
     openIn: "Mở trong",
   },

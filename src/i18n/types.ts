@@ -26,6 +26,8 @@ export interface UIStrings {
     copyForLlm: string;
     /** Heading of the contents list beside a long post. */
     contents: string;
+    /** Under a post that went through the agent drafting flow (AGENTS.md). */
+    agentDrafted: string;
     copiedForLlm: string;
     openIn: string;
   };

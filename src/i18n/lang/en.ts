@@ -27,6 +27,8 @@ export default {
     rawMarkdown: "Markdown",
     copyForLlm: "Copy for LLM",
     contents: "Contents",
+    agentDrafted:
+      "My agent drafted this post from my logs and notes. Every claim was checked against its source, and I approved it.",
     copiedForLlm: "Copied",
     openIn: "Open in",
   },
