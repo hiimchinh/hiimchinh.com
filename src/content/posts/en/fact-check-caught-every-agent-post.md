@@ -14,8 +14,8 @@ readerQuestions:
   - "How do I check that every claim in a post was verified before it ships?"
 factCheck:
   date: 2026-11-10
-  claims: 23
-  verified: 20
+  claims: 26
+  verified: 23
   owner: 3
 ---
 
@@ -37,21 +37,33 @@ My agent drafts the posts on this blog, and a second model checks every claim be
 
 On 27 October I decided my agent would write a post a day and I would review and edit it. The same day the fact-check became part of the build, for posts from 28 October:
 
-1. The writing agent lists every factual claim in a private ledger, with its source and, for a number, the command that reproduces it. A row from this post's ledger:
+1. The writing agent lists every factual claim in a private ledger, with its source and, for a number, the command that reproduces it. A row from this post's ledger, shortened:
 
    ```markdown
    | 3 | 12 of 119 claims unsupported or wrong | `python3 count-audits.py` TOTAL line | VERIFIED |
    ```
 
-2. A fresh subagent on a different model from the writer gets the post, the sources and the commands, but not the writer's verdicts. It must open each source and rerun each command, then mark each claim VERIFIED, UNSUPPORTED or WRONG.
+2. A fresh subagent on a different model from the writer gets the post, the sources and the commands, but not the writer's verdicts. The core of its prompt:
+
+   ```text
+   Blind fact-check audit of a blog draft. You did not write it.
+   Post: <path>. Claims with sources and commands, no verdicts: <ledger copy>.
+   Rerun every command yourself; "not recomputed" counts as UNSUPPORTED.
+   For every factual sentence in the post, not only the ledger rows, open the
+   source and mark VERIFIED, UNSUPPORTED or WRONG with a one-line reason.
+   Claims that rest only on the owner's word: mark OWNER. Do not edit files.
+   ```
+
+   The "every factual sentence" line catches claims the writer left out of the ledger.
+
 3. The writer fixes or cuts until every claim is VERIFIED. A claim only I can vouch for is marked OWNER, and I confirm it before I approve.
-4. A script writes the ledger's counts into the post's frontmatter, never by hand, and the build fails when `verified + owner < claims`. This post's block:
+4. `node scripts/fact-check-count.mjs ledger.md post.md` writes the ledger's counts into the post's frontmatter, never by hand. The content schema fails the build when `verified + owner < claims`. This post's block:
 
    ```yaml
    factCheck:
      date: 2026-11-10
-     claims: 23
-     verified: 20
+     claims: 26
+     verified: 23
      owner: 3
    ```
 
@@ -67,7 +79,7 @@ The full rules are gate 1 in this site's [AGENTS.md](https://github.com/hiimchin
 | [dotfiles auto-commit](/posts/dotfiles-autocommit-deleted-agent-rules/) | 32      | 2           | 1     |
 | **Total**                                                               | **119** | **8**       | **4** |
 
-The other 3 first audits list rewritten items instead of counts: 4, 5 and 2. After the fixes, all 7 shipped with every claim verified or owner-confirmed.
+The other 3 first audits list rewritten items instead of counts: 4, 5 and 2. After the fixes, the 7 posts shipped 171 claims: 161 verified, 10 owner-confirmed, 0 open.
 
 ## What it caught
 
@@ -95,7 +107,5 @@ A script reads the audit lines in my ledgers:
 $ python3 count-audits.py | tail -1
 TOTAL posts=7 audit_runs=13 posts_with_2plus_runs=4 first_audit_bad=12/119 owner_only=10
 ```
-
-If your pipeline cannot print a line like this, it has no record that a check ran.
 
 Agents make the mistakes now, so rules belong in the harness as hooks, defaults and checks, not in advice. "Check your facts" in a prompt is advice; a build that fails on an unchecked claim is a rule.
