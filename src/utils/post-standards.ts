@@ -12,6 +12,11 @@ export const FACT_CHECK_SINCE = new Date("2026-10-28T00:00:00+07:00");
 /** Owner requirement 27/10/2026: short and to the point. */
 export const WORD_LIMIT_SINCE = FACT_CHECK_SINCE;
 export const MAX_PROSE_WORDS = 600;
+/**
+ * Owner requirement 09/11/2026: posts carry his point of view. From this date
+ * a post states one position of his (`stance`), sourced in its claims ledger.
+ */
+export const STANCE_SINCE = new Date("2026-11-10T00:00:00+07:00");
 
 export type PostStandardFields = {
   draft?: boolean;
@@ -26,6 +31,8 @@ export type PostStandardFields = {
     verified: number;
     owner?: number;
   };
+  /** The owner's position the post argues, said in its text as well. */
+  stance?: string;
 };
 
 /** Human-readable reasons a post may not be published yet; empty when it may. */
@@ -56,6 +63,9 @@ export function postStandardViolations(post: PostStandardFields): string[] {
   if (post.pubDatetime >= FACT_CHECK_SINCE) {
     violations.push(...factCheckViolations(post.factCheck));
   }
+  if (post.pubDatetime >= STANCE_SINCE && !post.stance?.trim()) {
+    violations.push("stance is missing");
+  }
   return violations;
 }
 
@@ -85,6 +95,12 @@ export function proseWordCount(text: string): number {
   return stripNonProse(text)
     .split(/\s+/)
     .filter(word => /[\p{L}\p{N}]/u.test(word)).length;
+}
+
+/** Whether the stance sentence appears in the prose, outside comments and code. */
+export function stanceInProse(text: string, stance: string): boolean {
+  const squash = (t: string) => t.replace(/\s+/g, " ").trim();
+  return squash(stripNonProse(text)).includes(squash(stance));
 }
 
 /** Notes for the author that must be removed before publishing. */

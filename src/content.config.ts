@@ -45,6 +45,8 @@ const posts = defineCollection({
             owner: z.number().int().min(0).optional(),
           })
           .optional(),
+        /** The owner's position the post argues (AGENTS.md, gate 4). */
+        stance: z.string().optional(),
       })
       .superRefine((post, ctx) => {
         for (const message of postStandardViolations(post)) {

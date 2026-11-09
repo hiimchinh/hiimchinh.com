@@ -41,6 +41,8 @@ tags: []
 draft: true
 # Who is this for, in one line?
 audience: ""
+# Which of my positions does it argue? One sentence, said in the text too (blog-ideas STYLE.md).
+stance: ""
 # At least 3 questions that reader brings. The AI-reader check asks exactly these.
 readerQuestions: []
 # Filled in after the AI-reader check (AGENTS.md, "Writing a post"):
