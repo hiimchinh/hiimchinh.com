@@ -3,6 +3,10 @@ title: "A blind fact-check rejected claims in all 7 posts my AI agent drafted"
 description: "My agent lists every claim in a post with a source and a command. A second model, blind to the writer's verdicts, reruns them. Its first pass rejected at least one claim in all 7 posts published from 28 October to 9 November 2026; where it counted, 12 of 119 claims were unsupported or wrong."
 pubDatetime: 2026-11-10T07:00:00+07:00
 draft: true
+readerCheck:
+  date: 2026-11-10
+  full: 5
+  total: 5
 tags: ["ai-agents", "evals", "claude-code", "fact-checking"]
 stance: "Agents make the mistakes now, so rules belong in the harness as hooks, defaults and checks, not in advice."
 audience: "Engineers who publish text an AI agent drafts from their own logs and data, and want the facts in it to hold"
