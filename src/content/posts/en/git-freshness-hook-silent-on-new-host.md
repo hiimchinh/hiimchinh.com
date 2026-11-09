@@ -1,13 +1,13 @@
 ---
 title: "My agents' git freshness hook did nothing for at least 55 days after I moved them to Linux"
 description: "A hook that fetches before my coding agents read git state returned 0 on every call for at least 55 days, because it looked for ~/Work on a Linux server that keeps repos in ~/work. On 9 November 2026, 29 of 47 local default branches were behind origin; after one run of the fixed hook, 19 were."
-pubDatetime: 2026-11-09T07:00:00+07:00
-draft: true
+pubDatetime: 2026-11-09T15:30:00+07:00
 readerCheck:
   date: 2026-11-09
   full: 5
   total: 5
 tags: ["ai-agents", "claude-code", "git", "hooks"]
+stance: "Agents make the mistakes now, so rules belong in the harness as hooks, defaults and checks, not in advice."
 audience: "Engineers who run coding agents on a server and rely on hooks to keep the agents' git view current"
 readerQuestions:
   - "Why did my coding agent say a branch was not merged when it was?"
@@ -17,16 +17,10 @@ readerQuestions:
   - "How do I check that my freshness hook actually ran?"
 factCheck:
   date: 2026-11-09
-  claims: 23
+  claims: 24
   verified: 21
-  owner: 2
+  owner: 3
 ---
-
-<!-- DRAFT NOTES
-Claims to confirm (only you can):
-1. 20 Aug 2026: the agent reported the branch as "pushed, no PR" and you asked why it was not merged.
-2. Local main was 75 commits behind origin/main and `git log main..branch` showed 70 commits (from the incident note).
--->
 
 My git freshness hook, which fetches before my coding agents read git state, returned 0 on every call for at least 55 days and refreshed nothing. On 9 November 2026, 29 of the 47 local default branches on my build server were behind `origin`; after one run of the fixed hook, 19 were.
 
@@ -40,7 +34,7 @@ My git freshness hook, which fetches before my coding agents read git state, ret
 
 On 20 August 2026 an agent told me a branch was pushed but had no pull request. It had merged through two PRs, on 17 and 19 August. The local `main` was 75 commits behind `origin/main`, so `git log main..branch` showed 70 commits that looked unmerged.
 
-The fix: two Claude Code hooks run one script, before every `git` command for that repo and at session start for all repos. The two entries in `~/.claude/settings.json` (path shortened, other keys removed):
+The fix: two Claude Code hooks run one script, before every `git` command for that repo and at session start for all repos. In `~/.claude/settings.json`, shortened:
 
 ```json
 "PreToolUse": [{ "matcher": "Bash", "hooks": [{ "type": "command", "if": "Bash(git *)", "timeout": 25,
@@ -55,11 +49,11 @@ Per repo, the script runs one fetch:
 git -C "$repo" fetch origin --prune --no-tags '+refs/heads/*:refs/remotes/origin/*' "main:main"
 ```
 
-The second refspec has no `+`, so git refuses any update to `main` that is not a fast-forward and local commits stay. A 15-minute stamp skips the network on repeat calls.
+The second refspec has no `+`, so git refuses a non-fast-forward update to `main` and local commits stay. A 15-minute stamp skips the network on repeat calls.
 
 ## How it broke
 
-The defaults named the Mac's folders: repos in `~/Work`, the report in `~/Library/Logs`. Then I moved the agents to a Linux server, where repos live in `~/work`; the hooks are in its config history from 15 September. On that file system `~/Work` does not exist, so both modes returned 0:
+The defaults named the Mac's folders: repos in `~/Work`, the report in `~/Library/Logs`. Then I moved the agents to a Linux server, where repos live in `~/work`; the hooks are in its config history from 15 September. There `~/Work` does not exist, so both modes returned 0:
 
 - `prime` found no repo and returned 0.
 - `touch` skipped every path, because none started with `~/Work`.
@@ -69,7 +63,7 @@ No report file ever existed on the server.
 
 ## Before and after
 
-A script fetched each repo and counted how far its local default branch was behind `origin`:
+A script fetched each repo and counted local default branches behind `origin`:
 
 |                              | Default branches behind origin |
 | ---------------------------- | ------------------------------ |
@@ -80,9 +74,11 @@ That `prime` run made 56 report entries: 11 fast-forwarded (10 of them among the
 
 ## What still fails
 
-Git will not fast-forward a branch that is checked out. Those repos stay behind locally, and the report records how far. Their `origin/*` refs are fresh, so an agent that compares against `origin/main` gets the right answer, and one that compares against `main` still does not.
+Git will not fast-forward a branch that is checked out. The report records how far those repos stay behind. Their `origin/*` refs are fresh, so an agent comparing against `origin/main` is right; one comparing against `main` is not.
 
 ## The guardrail on the guardrail
+
+Agents make the mistakes now, so rules belong in the harness as hooks, defaults and checks, not in advice. A hook that fails silently enforces nothing.
 
 1. The defaults now cover `~/work` and `~/Work`, deduplicated.
 2. Off macOS, the cache and report move to `~/.cache` and `~/.local/state`.
