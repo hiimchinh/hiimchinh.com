@@ -82,14 +82,17 @@ A draft reaches the owner only after gates 0–4 pass. Record each result.
 2. **Privacy.** No customer, company, product, server host name, internal
    price or secret. `tests/restricted-references.test.ts` checks names; the
    writer checks the rest.
-3. **Slop.** `tests/slop-phrases.test.ts` fails on stock AI phrases. Also
+3. **Slop.** `tests/slop-phrases.test.ts` fails on stock AI phrases, the
+   "it's not X, it's Y" frames and more than one em dash. Also
    follow `blog-ideas/STYLE.md`, which grows from the owner's edits.
-4. **Reader and judge.** The AI-reader check ("Writing a post", step 5) must
+4. **Reader and judge.** The AI-reader check ("Writing a post", step 6) must
    be FULL. Then a fresh subagent on a different model answers yes or no:
    (a) is the result in the first two sentences, (b) is there a number before
    and after, (c) is there a failure or surprise, (d) is there a cost, time or
-   trade-off, (e) can 20% of the words go without losing a fact? Pass is yes to
-   a–d where they apply and no to e. Put the answers in the PR body.
+   trade-off, (e) can 20% of the words go without losing a fact, (f) does the
+   post argue its `stance`, a position a competent engineer could disagree
+   with? Pass is yes to a–d and f where they apply and no to e. Put the
+   answers in the PR body.
 5. **Owner edit.** At publish, run
    `node scripts/edit-ratio.mjs <draft at review> <published>` and record
    `ownerEditRatio` in the idea. Turn each owner edit into one rule in
@@ -109,11 +112,16 @@ post moves.
 
 1. **Pick one reader.** Write `audience` in one line, e.g. "Developers with a
    static site on Netlify who want to move it to Cloudflare Workers".
-2. **List their questions.** At least 3 in `readerQuestions`, phrased as that
+2. **Pick the owner's stance.** One position of his from the list in
+   `blog-ideas/STYLE.md` that the evidence supports, in `stance`, said with
+   the same sentence in the text; its source is a row in the claims ledger.
+   Never invent one; a new stance is a `DRAFT NOTES` question. The build
+   fails on a post from 10 November 2026 without it.
+3. **List their questions.** At least 3 in `readerQuestions`, phrased as that
    reader would ask an AI assistant. Include one "does this apply to me?" and
    one "how do I check it worked?".
-3. **Write the draft** in the online editor at `/admin/` (Sveltia CMS,
-   `public/admin/config.yml`; saving opens the PR of step 4 on branch
+4. **Write the draft** in the online editor at `/admin/` (Sveltia CMS,
+   `public/admin/config.yml`; saving opens the PR of step 5 on branch
    `cms/posts/<slug>`) or with `pnpm new-post "Title"`. It stays
    `draft: true`. Style:
    task-shaped title ("How to …"), a description that states the result, a
@@ -121,15 +129,15 @@ post moves.
    steps with real commands, and expected output for each check. Facts come
    from the owner or from verified sources; never invent numbers. Notes for the
    owner go in an HTML comment starting with `DRAFT NOTES`.
-4. **Open a PR.** CI comments a preview link where the draft is visible.
-5. **Run the AI-reader check.** Spawn a fresh subagent whose only source is the preview Markdown (use `sonnet`: `haiku` graded the
+5. **Open a PR.** CI comments a preview link where the draft is visible.
+6. **Run the AI-reader check.** Spawn a fresh subagent whose only source is the preview Markdown (use `sonnet`: `haiku` graded the
    same text 3/4 and 4/4 on different runs),
    `https://pr-<n>-hiimchinh-com.ch-nh.workers.dev/posts/<slug>.md`. It answers
    each `readerQuestions` entry and grades it FULL (a quoted sentence answers
    the whole question), PARTIAL or NONE. Fix the post and re-run with a new
    subagent until every question is FULL.
-6. **Record the result** in `readerCheck` (`date`, `full`, `total`).
-7. **Publish** after the owner approves: remove `draft: true` and the
+7. **Record the result** in `readerCheck` (`date`, `full`, `total`).
+8. **Publish** after the owner approves: remove `draft: true` and the
    `DRAFT NOTES` comment, merge. CI ("Owner approval") fails on any pull
    request that publishes a post or changes a published one until the owner's
    account approves its head commit, unless the owner opened it. When the
