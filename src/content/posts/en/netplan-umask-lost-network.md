@@ -3,6 +3,10 @@ title: "My coding agent ran sudo netplan under umask 077 and took my build serve
 description: "On 14 September 2026 my agent regenerated Netplan from a service with UMask=0077. sudo kept that umask, the .network file came out mode 0600, systemd-networkd could not read it and dropped the DHCP lease. One sudoers line now forces umask 0022 for netplan."
 pubDatetime: 2026-11-11T07:00:00+07:00
 draft: true
+readerCheck:
+  date: 2026-11-11
+  full: 5
+  total: 5
 tags: ["ai-agents", "linux", "netplan", "sudo", "incident"]
 stance: "Fix the cause once instead of patching the symptom again."
 audience: "Engineers who let a coding agent run sudo on a Linux server that uses Netplan and systemd-networkd"
