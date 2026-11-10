@@ -30,8 +30,9 @@ On 14 September 2026 my coding agent ran `sudo netplan generate` from a service 
 ## Does this apply to you?
 
 - **An agent or service with a strict umask runs `sudo netplan`** on a host with systemd-networkd: yes.
-- **Nothing with a strict umask writes your network config,** with or without sudo: no.
-- **NetworkManager instead of networkd:** not tested.
+- **The agent runs netplan as root with a strict umask, no sudo:** yes, and the sudoers rule below does not cover it. Set umask 0022 in that script.
+- **Nothing with a strict umask writes your network config:** no.
+- **NetworkManager instead of networkd:** not tested. Check which user reads the generated files, then run the check at the end as that user.
 
 ## What happened
 
