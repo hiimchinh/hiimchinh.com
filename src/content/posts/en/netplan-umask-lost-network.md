@@ -14,8 +14,8 @@ readerQuestions:
   - "How do I check that networkd can read the Netplan output?"
 factCheck:
   date: 2026-11-11
-  claims: 24
-  verified: 21
+  claims: 25
+  verified: 22
   owner: 3
 ---
 
@@ -32,7 +32,7 @@ On 14 September 2026 my coding agent ran `sudo netplan generate` from a service 
 - **An agent or service with a strict umask runs `sudo netplan`** on a host with systemd-networkd: yes.
 - **The agent runs netplan as root with a strict umask, no sudo:** yes, and the sudoers rule below does not cover it. Set umask 0022 in that script.
 - **Nothing with a strict umask writes your network config:** no.
-- **NetworkManager instead of networkd:** not tested. Check which user reads the generated files, then run the check at the end as that user.
+- **NetworkManager instead of networkd:** no. With that renderer, netplan wrote the connection file as 0600 root:root under umask 077 and 022 alike, and NetworkManager runs as root. I tested the generated files, not a live reload.
 
 ## What happened
 
