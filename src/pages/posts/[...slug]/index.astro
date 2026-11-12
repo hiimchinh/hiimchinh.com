@@ -7,6 +7,7 @@ import Datetime from "@/components/Datetime.astro";
 import Tag from "@/components/Tag.astro";
 import { getPostUrl } from "@/utils/getPostPaths";
 import { llmChatLinks } from "@/utils/llm-links";
+import { provenanceKey } from "@/utils/vault-draft";
 import {
   getPostStaticPaths,
   type PostPageProps,
@@ -41,7 +42,10 @@ const {
   timezone,
   tags,
   hideEditPost,
+  factCheck,
+  ownerDone,
 } = post.data;
+const provenance = provenanceKey({ factCheck, ownerDone });
 
 const { Content, headings } = await render(post);
 const toc = tocEntries(headings);
@@ -173,6 +177,12 @@ const ogImage = ogImageUrl
     >
       <Content />
     </article>
+
+    {
+      provenance && (
+        <p class="mt-8 text-sm italic opacity-80">{t.post[provenance]}</p>
+      )
+    }
 
     <hr class="my-8 border-dashed" />
 

@@ -47,6 +47,8 @@ const posts = defineCollection({
           .optional(),
         /** The owner's position the post argues (AGENTS.md, gate 4). */
         stance: z.string().optional(),
+        /** The day the owner marked the Obsidian draft done (vault-draft.ts). */
+        ownerDone: date.optional(),
       })
       .superRefine((post, ctx) => {
         for (const message of postStandardViolations(post)) {

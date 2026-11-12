@@ -180,3 +180,16 @@ test("a post with two or more sections lists them in the contents", () => {
   assert.match(html, /data-toc-link="the-four-numbers"/);
   assert.match(html, /data-toc-link="adding-them-up"/);
 });
+
+test("a fact-checked post says my agent drafted it and I approved it", () => {
+  const html = read("posts/git-freshness-hook-silent-on-new-host/index.html");
+  assert.match(
+    html,
+    /My agent drafted this post from my logs and notes\. Every claim was checked against its source, and I approved it\./
+  );
+});
+
+test("a post I wrote before the agent flow carries no drafting note", () => {
+  const html = read("posts/translate-file-permissions-linux/index.html");
+  assert.doesNotMatch(html, /My agent drafted this post/);
+});

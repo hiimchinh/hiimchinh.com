@@ -26,6 +26,10 @@ export interface UIStrings {
     copyForLlm: string;
     /** Heading of the contents list beside a long post. */
     contents: string;
+    /** Under a post that went through the agent drafting flow (AGENTS.md). */
+    agentDrafted: string;
+    /** Under a post whose opening and opinion the owner wrote (vault-draft.ts). */
+    ownerWrote: string;
     copiedForLlm: string;
     openIn: string;
   };

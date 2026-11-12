@@ -10,6 +10,7 @@ import {
   proseWordCount,
   stanceInProse,
 } from "../src/utils/post-standards.ts";
+import { ownerWrote } from "../src/utils/vault-draft.ts";
 
 const complete = {
   draft: false,
@@ -160,7 +161,8 @@ test("posts since the word limit stay within the limit", async () => {
     for (const name of await readdir(dir).catch(() => [])) {
       const text = await readFile(new URL(name, dir), "utf8");
       const pub = /^pubDatetime:\s*["']?([^"'\n#]+?)["']?\s*(?:#.*)?$/m.exec(text)?.[1];
-      if (!pub || new Date(pub) < WORD_LIMIT_SINCE) continue;
+      // The owner's own words are not held to the agent's limits.
+      if (!pub || new Date(pub) < WORD_LIMIT_SINCE || ownerWrote(text)) continue;
       const words = proseWordCount(text);
       if (words > MAX_PROSE_WORDS) offenders.push(`${locale}/${name}: ${words}`);
     }
@@ -210,7 +212,8 @@ test("every post since the stance standard says its stance in the text", async (
       const text = await readFile(new URL(name, dir), "utf8");
       const front = text.split(/^---\s*$/m)[1] ?? "";
       const pub = /^pubDatetime:\s*["']?([^"'\n#]+?)["']?\s*(?:#.*)?$/m.exec(front)?.[1];
-      if (!pub || new Date(pub) < STANCE_SINCE) continue;
+      // The owner writes the opinion of a post he finished himself.
+      if (!pub || new Date(pub) < STANCE_SINCE || ownerWrote(text)) continue;
       const stance = /^stance:\s*["']?(.+?)["']?\s*$/m.exec(front)?.[1] ?? "";
       if (!stance || !stanceInProse(text, stance)) offenders.push(`${locale}/${name}`);
     }
