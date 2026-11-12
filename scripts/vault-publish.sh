@@ -50,7 +50,9 @@ publish() {
   slug=$(basename "$note" .md)
   branch="vault/$slug-$(date +%y%m%d%H%M)"
   wt=$(mktemp -d)
-  trap 'git -C "$REPO" worktree remove --force "$wt" >/dev/null 2>&1 || true' EXIT
+  # Expanded now: wt and branch are local and gone by the time EXIT runs.
+  # shellcheck disable=SC2064
+  trap "git -C '$REPO' worktree remove --force '$wt' >/dev/null 2>&1; git -C '$REPO' branch -D '$branch' >/dev/null 2>&1 || true" EXIT
   git -C "$REPO" fetch -q origin main
   git -C "$REPO" worktree add -q -b "$branch" "$wt" origin/main
 
