@@ -29,6 +29,8 @@ export default {
     contents: "Mục lục",
     agentDrafted:
       "Agent của tôi viết nháp bài này từ log và ghi chú của tôi. Mọi claim đều được đối chiếu với nguồn, và tôi đã duyệt.",
+    ownerWrote:
+      "Agent của tôi viết nháp bài này từ log của tôi và đối chiếu mọi claim; tôi viết phần mở đầu và quan điểm, phần còn lại tôi duyệt.",
     copiedForLlm: "Đã copy",
     openIn: "Mở trong",
   },

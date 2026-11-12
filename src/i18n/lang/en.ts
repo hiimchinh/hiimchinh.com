@@ -29,6 +29,8 @@ export default {
     contents: "Contents",
     agentDrafted:
       "My agent drafted this post from my logs and notes. Every claim was checked against its source, and I approved it.",
+    ownerWrote:
+      "My agent drafted this from my logs and checked every claim; I wrote the opening and the opinion and approved the rest.",
     copiedForLlm: "Copied",
     openIn: "Open in",
   },

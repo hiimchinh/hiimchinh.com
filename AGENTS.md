@@ -144,46 +144,67 @@ post moves.
    owner approves in chat or in `/admin/`, record it after the last commit
    with `GITHUB_AS_OWNER=1 gh pr review <pr> --approve --body "<his words>"`.
 
-## Daily cadence: the agent writes, the owner approves
+## Daily cadence: the agent drafts, the owner writes the opinion
 
-Owner decision 27 October 2026: one post a day, written by an agent and
-reviewed and edited by the owner. The owner's review time is the binding
-constraint, so every draft must reach the owner ready to publish. A scheduled
-job runs the steps below every morning (06:30 Asia/Ho_Chi_Minh).
+Owner decisions 27 October 2026 (one post a day, drafted by an agent) and
+12 November 2026 (drafts live in his Obsidian vault; he writes the opening and
+the opinion himself; marking a draft done publishes it, with no pull request
+to approve). A scheduled job runs the steps below every morning
+(06:30 Asia/Ho_Chi_Minh).
 
-1. **Publish what the owner approved.** An open post PR is approved when the
-   owner approved it on GitHub, moved it to "Ready" in `/admin/` (label
-   `sveltia-cms/pending_publish`), or said so in chat. Remove `draft: true` and
-   the `DRAFT NOTES` comment. If the owner changed the text after the last
-   `readerCheck`, run the AI-reader check again. Merge when every check,
-   including "Owner approval", is green (`gh pr checks <pr>`). Set
-   the idea to `status: published`.
-2. **Apply the owner's comments** on the other open post PRs, then re-run the
-   AI-reader check.
-3. **Harvest ideas.** Read the second-brain notes added or changed in the last
+Where drafts live: `HC/blog-drafts/<slug>.md` in the second-brain repo
+(`~/work/second-brain`, private). The note is the post file plus vault keys:
+
+- `status`: `draft` while it waits; the owner sets `done`; the publisher
+  writes `published` (with `url`) or `blocked` (with the reason in `blocked`).
+- `locale`: `en` (default) or `vi`.
+- `> [!todo] Chính viết: mở bài` and `> [!todo] Chính viết: quan điểm`: the
+  two slots the owner writes. Under each, in the callout, the agent lists the
+  facts and the stance from `blog-ideas/STYLE.md` the slot can use, never a
+  finished paragraph. The publisher refuses a draft while any `[!todo]`
+  callout is left.
+- `> [!question] Xác nhận`: the OWNER claims. Marking the draft done confirms
+  them; the publisher removes the callout.
+
+Publishing is `scripts/vault-publish.sh`, run every 5 minutes by
+`blog-vault-publish.timer` on home-cook (units in `hclabsco/tooling`
+`systemd/`). For each `status: done` note it writes the post with
+`scripts/vault-draft.mjs` (`ownerDone` set, `pubDatetime` set to now, vault
+keys and `draft` removed), opens a pull request as the owner's account, waits
+for CI, merges, and writes `status: published` and `url` back to the note. Run
+it at once with `ssh home-cook systemctl --user start blog-vault-publish`
+when the owner says "done" in chat. Posts with `ownerDone` are exempt from the
+slop, word-limit and stance-in-text tests: those gate the agent's draft, and
+the owner's own words are final. The page says which parts he wrote
+(`provenanceKey` in `src/utils/vault-draft.ts`).
+
+1. **Check what the owner finished.** Read the drafts' `status`. Report
+   `published` URLs and `blocked` reasons; fix a `blocked` draft only when the
+   reason is mechanical (prettier, frontmatter), then leave it `draft` for him.
+2. **Harvest ideas.** Read the second-brain notes added or changed in the last
    day under `HC/incidents`, `HC/knowledge` and `HC/runbooks`. Add an idea to
    `hiimchinh/blog-ideas` only when it fits an approved series and passes the
    Non-negotiables. Lessons from client work are `client-only`. Business,
    money, contract and customer notes are never ideas.
-4. **Stop if the owner is behind.** When 2 or more post PRs wait for the
-   owner, write nothing new. The report says which drafts wait.
-5. **Write one post** from the highest-priority idea, following "Writing a
-   post" and "Quality gates", choosing the format the mix is shortest of.
-   Owner requirement: short, concise, exact, to the point. One task, at most
-   600 words (`tests/post-standards.test.ts`), the answer in the first two
-   sentences, real commands and real output. Every sentence carries a fact, a
-   step or an output; cut the rest. Open the PR from branch
-   `cms/posts/<slug>` with label `sveltia-cms/pending_review`, so the draft also
-   appears in `/admin/` for editing in the browser.
-6. **Report** in Vietnamese, at most 120 words: the preview link of each draft
-   that waits, the claims the owner must confirm, what was published.
+3. **Stop if the owner is behind.** When 2 or more drafts have
+   `status: draft`, write nothing new. The report names them.
+4. **Write one draft** from the highest-priority idea, following "Writing a
+   post" steps 1–3 and 6–7 and "Quality gates" 0–4 (the reader check reads the
+   draft with the callouts removed), choosing the format the mix is shortest
+   of. Owner requirement: short, concise, exact, to the point. One task, at
+   most 600 words, real commands and real output. Leave the opening and the
+   opinion as `[!todo]` slots. Write it to `HC/blog-drafts/<slug>.md` with
+   `status: draft`, commit only that path, and push. No pull request.
+5. **Report** in Vietnamese, at most 80 words: the drafts that wait, each
+   with its note path `HC/blog-drafts/<slug>.md` in its own fenced code
+   block, the OWNER claims, and what was published.
 
 Rules for daily drafts:
 
-- The repository, its PRs and the preview link are public. `DRAFT NOTES` lists
-  the claims to confirm, never a private note path, a host name of the owner's
-  servers, a customer or a company name. Sources go in the idea's `sources`
-  field in the private inbox.
+- The vault is private, but the post is public. Callouts and `DRAFT NOTES`
+  are removed on publish; everything else in the note ships, so the body names
+  no private note path, host name of the owner's servers, customer or company.
+  Sources go in the idea's `sources` field in the private inbox.
 - Write in English. A Vietnamese translation is not part of the daily job.
 - Never invent a number, an output or an experience. When the notes do not
   have the real output, reproduce it in a throwaway container or drop the

@@ -3,6 +3,7 @@ import { readFile, readdir } from "node:fs/promises";
 import test from "node:test";
 import { slopHits } from "../src/utils/slop-phrases.ts";
 import { WORD_LIMIT_SINCE } from "../src/utils/post-standards.ts";
+import { ownerWrote } from "../src/utils/vault-draft.ts";
 
 test("stock AI phrases are found, case-insensitive, with the phrase named", () => {
   assert.deepEqual(
@@ -32,7 +33,8 @@ test("posts since the word limit use none of the stock AI phrases", async () => 
     for (const name of await readdir(dir).catch(() => [])) {
       const text = await readFile(new URL(name, dir), "utf8");
       const pub = /^pubDatetime:\s*["']?([^"'\n#]+?)["']?\s*(?:#.*)?$/m.exec(text)?.[1];
-      if (!pub || new Date(pub) < WORD_LIMIT_SINCE) continue;
+      // Slop rules gate the agent's drafts, not the owner's own words.
+      if (!pub || new Date(pub) < WORD_LIMIT_SINCE || ownerWrote(text)) continue;
       const hits = slopHits(text);
       if (hits.length) offenders.push(`${locale}/${name}: ${hits.join(", ")}`);
     }
